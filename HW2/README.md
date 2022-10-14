@@ -1,0 +1,13 @@
+# Socket Programming and Data Visualization 
+## Setup
+1. Import `mbed-os-example-sockets` program in MBED Studio
+2. Replace `mbed_app.json`, `main.cpp` in the project
+3. Use `ipconfig` to check your host's ip address, replace `config['hostname']['value']` in `mbed_app.json` with your ip
+4. Run `python HW2.py --num 10` to listen 10 data (one can specify `num` to receive)
+5. Build and run in MBED Studio
+
+## Prerequisite
+1. `pip install matplotlib`
+
+## Result
+The program will visualize `num` point and plot it as following:
