@@ -8,6 +8,8 @@
 
 ## Prerequisite
 1. `pip install matplotlib`
+2. Add Library `BSP_B-L475E-IOT01` in MBED Stuio
+3. Use Board `B-L475E-IOT01A2`
 
 ## Result
 The program will visualize `num` point and plot it as following:
