@@ -140,13 +140,7 @@ public:
         {
             ++sample_num;
             BSP_GYRO_GetXYZ(pGyroDataXYZ);
-            printf("\nGYRO_X = %.2f\n", pGyroDataXYZ[0]);
-            printf("GYRO_Y = %.2f\n", pGyroDataXYZ[1]);
-            printf("GYRO_Z = %.2f\n", pGyroDataXYZ[2]);
             BSP_ACCELERO_AccGetXYZ(pDataXYZ);
-            printf("\nACCELERO_X = %d\n", pDataXYZ[0]);
-            printf("ACCELERO_Y = %d\n", pDataXYZ[1]);
-            printf("ACCELERO_Z = %d\n", pDataXYZ[2]);
             ThisThread::sleep_for(1s);
             float x = pDataXYZ[0] * SCALE_MULTIPLIER, y = pDataXYZ[1] * SCALE_MULTIPLIER, z = pDataXYZ[2] * SCALE_MULTIPLIER;
             // printf("(x,y,z,s) = %d, %d, %d, %d\r\n", pDataXYZ[0],pDataXYZ[1],pDataXYZ[2],sample_num);
