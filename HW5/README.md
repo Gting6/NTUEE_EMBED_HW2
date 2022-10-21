@@ -7,5 +7,7 @@
 
 ![image](./result/排線1.jpg)		
 ![image](./result/排線2.jpg)
+
 5. set input sigal trigger condition to rising edge
+
 ![image](./result/logic_analyzer.png)
