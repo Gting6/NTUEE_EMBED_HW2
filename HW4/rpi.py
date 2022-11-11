@@ -30,7 +30,6 @@ class MyDelegate(DefaultDelegate):
 scanner = Scanner()
 print("Scanning for 5 seconds...")
 devices = list(scanner.scan(5.0))
-
 for i, dev in enumerate(devices):
     print("#%d: %s (%s), RSSI=%d dB" % (i, dev.addr, dev.addrType, dev.rssi))
     for (adtype, desc, value) in dev.getScanData():
@@ -53,18 +52,13 @@ for svc in services:
 
 try:
     target_svc = input("service uuid: ")
-    # target_svc = int("0x"+str(input("Which service to connect? ")), 16)
     print(target_svc)
-
     testService = dev.getServiceByUUID(target_svc)
-
     print()
     print("Available Characteristics:")
     for ch in testService.getCharacteristics():
         print(ch.uuid, str(ch))
-        # print(str(ch))
     target_char = input("char uuid: ")
-    # target_char = int("0x"+str(input("Which characteristic to connect? ")), 16)
     ch = dev.getCharacteristics(uuid=UUID(target_char))[0]
     ch_handle = ch.getHandle()
     ch_notify_handle = ch_handle + 1
