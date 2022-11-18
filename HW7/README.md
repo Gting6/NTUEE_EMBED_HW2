@@ -10,7 +10,5 @@ BSP_B-L475E-IOT01: https://os.mbed.com/teams/ST/code/BSP_B-L475E-IOT01/
 7. Using matlab or python to plot the results
 
 ## Results
-example (input, reference, output)
 ![](https://i.imgur.com/RVqBlF9.png)
-accelerators (input, output)
 ![](https://i.imgur.com/7GWbd1n.png)
