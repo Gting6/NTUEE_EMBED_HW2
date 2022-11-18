@@ -122,7 +122,7 @@ int32_t main(void)
     for (int i = 0; i < TEST_LENGTH_SAMPLES; i++){
         BSP_ACCELERO_AccGetXYZ(pDataXYZ);
         input[i] = pDataXYZ[0];
-        // ThisThread::sleep_for(20);
+        ThisThread::sleep_for(100);
     }
 
   uint32_t i;
@@ -132,7 +132,8 @@ int32_t main(void)
   /* Initialize input and output buffer pointers */
   
   // change input data
-  inputF32 = &testInput_f32_1kHz_15kHz[0]; // &input[0]; 
+  inputF32 =  &input[0];
+  //&testInput_f32_1kHz_15kHz[0]; &input[0]; 
 
   outputF32 = &testOutput[0];
   /* Call FIR init function to initialize the instance structure. */
@@ -171,9 +172,13 @@ int32_t main(void)
 #endif
   }
 
-// print input
-  for (int i = 0; i < TEST_LENGTH_SAMPLES; i++){
-      printf("%d,", outputF32[i]);
+// print input & output 
+  for(int n = 0; n < TEST_LENGTH_SAMPLES; n++){
+      printf("%.2f, ", inputF32[n]);
+  }
+  printf("\n\n");
+  for(int n = 0; n < TEST_LENGTH_SAMPLES; n++){
+      printf("%.2f, ", testOutput[n]);
   }
 
 }
