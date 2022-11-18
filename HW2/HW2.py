@@ -5,7 +5,7 @@ import json
 import matplotlib.pyplot as plt
 import argparse
 
-HOST = '192.168.50.147'
+HOST = '170.20.10.1'
 PORT = 65431         # Port to listen on
 
 counter = 0
