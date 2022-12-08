@@ -1,0 +1,12 @@
+hard,7,gting
+hard,9,wen
+hard,1,gting
+hard,0,gting
+easy,4,weiche
+hard,0,g
+hard,0,sad
+easy,0,q
+easy,0,sadas
+normal,1,qq
+normal,4,qq
+easy,0,hoio
