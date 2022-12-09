@@ -4,6 +4,7 @@ from player import Player
 from threading import Thread
 import queue
 import socket
+
 q = queue.Queue()
 
 
@@ -34,14 +35,14 @@ def client():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
-        p.move()
-        # if not q.empty():
-        # p.move(q.get())
+        # p.move()
+        if not q.empty():
+            p.move(q.get())
         redrawWindow(win, p, p2)
 
 
 def signal():
-    HOST = '192.168.0.104'
+    HOST = '192.168.0.112'
     PORT = 65431         # Port to listen on
     counter = 0
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -61,14 +62,15 @@ def signal():
 
 # def main():
 # client()
-# signal_thread = Thread(target=signal)
+
+signal_thread = Thread(target=signal)
 
 client_thread = Thread(target=client)
 
 client_thread.start()
-# signal_thread.start()
+signal_thread.start()
 
 client_thread.join()
-# signal_thread.join()
+signal_thread.join()
 
 # main()

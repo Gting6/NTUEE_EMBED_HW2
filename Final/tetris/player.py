@@ -21,10 +21,10 @@ class Player():
             self.x -= self.vel
         if keys[pygame.K_RIGHT]:
             self.x += self.vel
-        if keys[pygame.K_UP]:
-            self.y -= self.vel
-        if keys[pygame.K_DOWN]:
-            self.y += self.vel
+        if order == 'u':
+            self.y -= self.vel * 50
+        if order == 'd':
+            self.y += self.vel * 50
         self.update()
 
     def update(self):

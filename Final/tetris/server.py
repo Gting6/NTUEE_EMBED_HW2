@@ -4,7 +4,7 @@ from player import Player
 import sys
 import pickle
 
-server = "192.168.0.104"  # my local ipv4 address, which will be server address
+server = "192.168.0.112"  # my local ipv4 address, which will be server address
 port = 5555  # typically safe
 
 # Use IPV4, sock_stream = get input string?
