@@ -110,23 +110,37 @@ char get_up_down(int16_t input, FSM &fsm)
 
     // using fsm
     string state = fsm.state;
-    if (state == "S3")
+    // if (state == "S3")
+    // {
+    //     if (fsm._change_state(data) == "WAIT")
+    //     {
+    //         return 'u';
+    //     }
+    //     // printf("%c\n", 'u');
+    // }
+    // else if (state == "S6")
+    // {
+    //     if (fsm._change_state(data) == "WAIT")
+    //     {
+    //         return 'd';
+    //         // int len = sprintf(acc_json, "%c", "d");
+    //         // response = _socket.send(acc_json, len);
+    //     }
+    //     // printf("%c\n", 'd');
+    // }
+    if (state == "S1")
     {
-        if (fsm._change_state(data) == "WAIT")
+        if (fsm._change_state(data) == "S2")
         {
             return 'u';
         }
-        // printf("%c\n", 'u');
     }
-    else if (state == "S6")
+    else if (state == "S4")
     {
-        if (fsm._change_state(data) == "WAIT")
+        if (fsm._change_state(data) == "S5")
         {
             return 'd';
-            // int len = sprintf(acc_json, "%c", "d");
-            // response = _socket.send(acc_json, len);
         }
-        // printf("%c\n", 'd');
     }
     else
         fsm._change_state(data);
