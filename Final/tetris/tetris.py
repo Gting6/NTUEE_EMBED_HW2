@@ -4,6 +4,10 @@ import math
 import copy
 from pygame.locals import *
 from timeit import default_timer as timer
+# from threading import Thread
+# import queue
+
+# q = queue.Queue()
 
 I = [['0000', '1111', '0000', '0000'], ['0100', '0100', '0100', '0100'],
      ['0000', '0000', '1111', '0000'], ['0010', '0010', '0010', '0010']]
@@ -26,7 +30,7 @@ class blocks():
 
     def __init__(self, shape):
         global leftup, width
-        self.piece = {'shape': shape, 'x': width/2-2 *
+        self.piece = {'shape': shape, 'x': width/4-2 *
                       self.length, 'y': leftup[1]-2*self.length, 'r': 0}
         self.draw(1)
         return
@@ -164,10 +168,10 @@ class blockly():
         self.next = self.block[self.count]
         self.hold = False
         if player == 0:
-            self.inil = 500
+            self.inil = 400
             self.init = 200
         else:
-            self.inil = 1100
+            self.inil = 1000
             self.init = 200
 
     def new(self):
@@ -240,7 +244,7 @@ def text_objects(text, font):
     return textSurface, textSurface.get_rect()
 
 
-def score(s, c, ll, tt):
+def sc(s, c, ll, tt):
     pygame.draw.rect(background, (0, 0, 0), (ll-100, tt+200, 90, 100))
     pygame.draw.rect(background, (0, 0, 0), (ll-250, tt+260, 240, 100))
 
@@ -291,27 +295,27 @@ def draw_boundary(ll, tt):
     textSurf4, textRect4 = text_objects('?', smallText)
     textRect4.center = (ll+270, 490)
     background.blit(textSurf4, textRect4)
-    score('0', '0', ll, tt)
+    sc('0', '0', ll, tt)
     pygame.display.update()
 
 
 def start():
-    BTStart = (340, 320, 120, 60)
-    BTQuit = (340, 500, 120, 60)
+    BTStart = (540, 320, 120, 60)
+    BTQuit = (540, 500, 120, 60)
     pygame.draw.rect(background, (0, 150, 0), BTStart)
     pygame.draw.rect(background, (200, 0, 0), BTQuit)
 
     smallText = pygame.font.SysFont('comicsansms', 30)
     smallText_t = pygame.font.SysFont('comicsansms', 100)
     textSurf_t, textRect_t = text_objects('Tetris', smallText_t)
-    textRect_t.center = (400, 150)
+    textRect_t.center = (600, 150)
     background.blit(textSurf_t, textRect_t)
 
     textSurf1, textRect1 = text_objects('Start', smallText)
-    textRect1.center = (400, 350)
+    textRect1.center = (600, 350)
     background.blit(textSurf1, textRect1)
     textSurf2, textRect2 = text_objects('Quit', smallText)
-    textRect2.center = (400, 530)
+    textRect2.center = (600, 530)
     background.blit(textSurf2, textRect2)
     pygame.display.update()
 
@@ -319,11 +323,11 @@ def start():
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse = pygame.mouse.get_pos()
-                if 340+120 > mouse[0] > 340 and 320 + 60 > mouse[1] > 320:
+                if 540+120 > mouse[0] > 540 and 320 + 60 > mouse[1] > 320:
                     pygame.draw.rect(background, (0, 0, 0), (0, 0, 800, 800))
                     pygame.display.update()
                     return
-                if 340 + 120 > mouse[0] > 340 and 500 + 60 > mouse[1] > 500:
+                if 540 + 120 > mouse[0] > 540 and 500 + 60 > mouse[1] > 500:
                     pygame.quit()
 
 
@@ -331,15 +335,15 @@ def clear():
     global back_d
     flag = 0
     for j in range(200, 600, 20):
-        if all(back_d[(i, j)] for i in range(300, 500, 20)):
+        if all(back_d[(i, j)] for i in range(200, 400, 20)):
             flag += 1
             for t in range(j, 180, -20):
-                for s in range(300, 500, 20):
+                for s in range(200, 400, 20):
                     back_d[(s, t)] = back_d[(s, t-20)]
     if flag:
         color = [(0, 255, 255), (255, 153, 0), (0, 0, 255),
                  (255, 255, 0), (0, 255, 0), (255, 0, 0), (102, 0, 255)]
-        for i in range(300, 500, 20):
+        for i in range(200, 400, 20):
             for j in range(200, 600, 20):
                 pygame.draw.rect(background, (0, 0, 0), (i+2, j+2, 15, 15))
                 if back_d[(i, j)]:
@@ -351,16 +355,17 @@ def clear():
 def game_loop(level, ll=200, tt=200):
     start = timer()
     crashed = False
-    blist = blockly(0)  # player 0
+    blist = blockly()
     a = blocks(blist.new())
     shift = 0
     point = Point()
     while not crashed:
         a1 = copy.deepcopy(a)
         a1.shadow()
-        # lose
-        for i in range(ll, ll+200, 20):
-            if back_d[(i, ll-20)]:
+        # 突破天際
+        for i in range(200, 400, 20):
+            if back_d[(i, 180)]:
+                print("crashed!")
                 crashed = True
         # get key
         for event in pygame.event.get():
@@ -368,43 +373,83 @@ def game_loop(level, ll=200, tt=200):
                 crashed = True
             if event.type == KEYDOWN:
                 # if event.key == K_p:
-                #     pygame.time.delay(10000) // no need
+                #     pygame.time.delay(10000)
                 a1.draw(0)
                 if not a.move(event.key):
                     a1.draw(0)
                     a.draw(1)
                     a = a.touchdown(blist.new())
                     shift = 0
-                    # flag = clear()
-                    # s, c = point.score(flag)
-    #                 sc(str(s), str(c))
-    #             if event.key == K_LSHIFT and not shift:
-    #                 a.draw(0)
-    #                 pygame.draw.rect(background, (0, 0, 0),
-    #                                  (300-120+5, 200+10, 90, 90))
-    #                 a.piece['x'], a.piece['y'] = 190, 215
-    #                 a.draw(1)
-    #                 a = blocks(blist.shift())
-    #                 shift = 1
-    #             a1 = copy.deepcopy(a)
-    #             a1.shadow()
+                    flag = clear()
+                    s, c = point.score(flag)
+                    sc(str(s), str(c), ll, tt)
+                if event.key == K_LSHIFT and not shift:
+                    a.draw(0)
+                    pygame.draw.rect(background, (0, 0, 0),
+                                     (ll-120+5, tt+10, 90, 90))
+                    a.piece['x'], a.piece['y'] = 90, 215
+                    a.draw(1)
+                    a = blocks(blist.shift())
+                    shift = 1
+                a1 = copy.deepcopy(a)
+                a1.shadow()
 
-    #     # freefall
-    #     if timer()-start > level:
-    #         if not a.freefall():
-    #             a1.draw(0)
-    #             a.draw(1)
-    #             a = a.touchdown(blist.new())
-    #             shift = 0
-    #             flag = clear()
-    #             s, c = point.score(flag)
-    #             sc(str(s), str(c))
-    #         start = timer()
+        # freefall
+        if timer()-start > level:
+            if not a.freefall():
+                a1.draw(0)
+                a.draw(1)
+                a = a.touchdown(blist.new())
+                shift = 0
+                flag = clear()
+                s, c = point.score(flag)
+                sc(str(s), str(c), ll, tt)
+            start = timer()
 
-    #     a.draw(1)
-    #     pygame.display.update()
-    #     clock.tick(60)
-    # return s
+        a.draw(1)
+        pygame.display.update()
+        clock.tick(60)
+    return s
+
+
+def final():
+    alphabet = {K_a: 'a', K_b: 'b', K_c: 'c', K_d: 'd', K_e: 'e', K_f: 'f', K_g: 'g', K_h: 'h', K_i: 'i', K_j: 'j', K_k: 'k', K_l: 'l', K_m: 'm', K_n: 'n', K_o: 'o',
+                K_p: 'p', K_q: 'q', K_r: 'r', K_s: 's', K_t: 't', K_u: 'u', K_v: 'v', K_w: 'w', K_x: 'x', K_y: 'y', K_z: 'z', K_0: '0', K_1: '1', K_2: '2', K_3: '3',
+                K_4: '4', K_5: '5', K_6: '6', K_7: '7', K_8: '8', K_9: '9', K_0: '0', K_SPACE: ' '}
+    pygame.draw.rect(background, (0, 0, 0), (300, 250, 200, 200))
+    smallText = pygame.font.SysFont('comicsansms', 30)
+    smallText2 = pygame.font.SysFont('comicsansms', 30)
+    textSurf2, textRect2 = text_objects('Your Name : ', smallText2)
+    textRect2.center = (400, 280)
+    background.blit(textSurf2, textRect2)
+    pygame.display.update()
+    name = []
+    count = -1
+    while True:
+        for event in pygame.event.get():
+            if event.type == KEYDOWN:
+                if count <= 9:
+                    if event.key in alphabet:
+                        count += 1
+                        name.append(alphabet[event.key])
+                        textSurf, textRect = text_objects(
+                            alphabet[event.key], smallText)
+                        textRect.center = (320+count*17, 340)
+                        background.blit(textSurf, textRect)
+                        pygame.display.update()
+                if event.key == K_BACKSPACE:
+                    if count < 0:
+                        continue
+                    pygame.draw.rect(background, (0, 0, 0),
+                                     (312.5+count*17, 330, 17, 35))
+                    count -= 1
+                    if len(name) > 0:
+                        name = name[:-1]
+                    pygame.display.update()
+                if event.key == K_RETURN:
+                    pygame.draw.rect(background, (0, 0, 0), (0, 0, 800, 800))
+                    pygame.display.update()
+                    return ''.join(name)
 
 
 while True:
@@ -416,19 +461,41 @@ while True:
     clock = pygame.time.Clock()
 
     gamewidth, gameheight = 300, 600
-    leftup = (300, 200)
+    leftup = (200, 200)
 
     back_d = {}
-    for i in range(0, 800, 20):
-        for j in range(0, 800, 20):
+    for i in range(0, 620, 20):
+        for j in range(0, 620, 20):
             back_d[(i, j)] = 1
-    for i in range(300, 500, 20):
+    for i in range(200, 400, 20):
         for j in range(160, 600, 20):
             back_d[(i, j)] = 0
     start()
-    l = (1.0, 'easy')
+    l = (1, 'easy')
     draw_boundary(200, 200)
     draw_boundary(800, 200)
     score = game_loop(l[0])
-    while True:
-        pass
+    # name = final()
+    # info = [l[1], str(score), str(name)]
+    # message = ','.join(info)
+    # file.write(message)
+    # file.write('\n')
+    # file.close()
+    # file = open('Tetris_Record.txt', 'r')
+    # listt = []
+    # s = file.readline()
+    # while s != '':
+    #     s = s.split(',')
+    #     if s[0] == l[1]:
+    #         listt.append((s[1], s[2].strip('\n')))
+    #     s = file.readline()
+    # listt = sorted(listt, key=lambda s: int(s[0]), reverse=True)
+    # listt = listt[:5]
+    # leader(l, listt, name)
+
+    # pygame.draw.rect(background, (0, 0, 0), (0, 0, 800, 800))
+    # pygame.display.update()
+
+    # print('level: ', l[1])
+    # print(listt[:5])
+    file.close()
