@@ -258,10 +258,10 @@ def sc(s, c, ll, tt):
     background.blit(textSurf2, textRect2)
     if int(c) >= 2:
         textSurf3, textRect3 = text_objects('Combo : ', smallText)
-        textRect3.center = (ll-50, tt+300)
+        textRect3.center = (ll-150, tt+300)
         background.blit(textSurf3, textRect3)
         textSurf4, textRect4 = text_objects(c, smallText)
-        textRect4.center = (ll+50, tt+300)
+        textRect4.center = (ll-50, tt+300)
         background.blit(textSurf4, textRect4)
     pygame.display.update()
 
