@@ -4,10 +4,10 @@ import math
 import copy
 from pygame.locals import *
 from timeit import default_timer as timer
-# from threading import Thread
-# import queue
+from threading import Thread
+import queue
 
-# q = queue.Queue()
+q = queue.Queue()
 
 I = [['0000', '1111', '0000', '0000'], ['0100', '0100', '0100', '0100'],
      ['0000', '0000', '1111', '0000'], ['0010', '0010', '0010', '0010']]
@@ -69,6 +69,8 @@ class blocks():
         return True
 
     def move(self, key):
+        # if key == 'd':
+        print(back_d)
         if key == pygame.K_DOWN:
             self.draw(0)
             self.piece['y'] += self.length
@@ -79,6 +81,7 @@ class blocks():
                 self.draw(1)
                 return False
 
+        # elif key == 'l':
         elif key == pygame.K_LEFT:
             self.draw(0)
             self.piece['x'] -= self.length
@@ -87,6 +90,7 @@ class blocks():
             else:
                 self.piece['x'] += self.length
 
+        # elif key == 'r':
         elif key == pygame.K_RIGHT:
             self.draw(0)
             self.piece['x'] += self.length
@@ -95,11 +99,13 @@ class blocks():
             else:
                 self.piece['x'] -= self.length
 
+        # elif key == 'u':
         elif key == pygame.K_UP:
             self.draw(0)
             if self.can_rotate():
                 pygame.time.delay(10)
 
+        # elif key == 's':
         elif key == pygame.K_SPACE:
             self.draw(0)
             while self.isvalid():
@@ -367,6 +373,29 @@ def game_loop(level, ll=200, tt=200):
             if back_d[(i, 180)]:
                 print("crashed!")
                 crashed = True
+        # if not q.empty():
+        #     e = q.get()
+        #     print("Hi", e)
+        #     a1.draw(0)
+        #     if not a.move(e):
+        #         a1.draw(0)
+        #         a.draw(1)
+        #         a = a.touchdown(blist.new())
+        #         shift = 0
+        #         flag = clear()
+        #         s, c = point.score(flag)
+        #         sc(str(s), str(c), ll, tt)
+            # if event.key == K_LSHIFT and not shift:
+            #     a.draw(0)
+            #     pygame.draw.rect(background, (0, 0, 0),
+            #                      (ll-120+5, tt+10, 90, 90))
+            #     a.piece['x'], a.piece['y'] = 90, 215
+            #     a.draw(1)
+            #     a = blocks(blist.shift())
+            #     shift = 1
+            # a1 = copy.deepcopy(a)
+            # a1.shadow()
+
         # get key
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -452,50 +481,46 @@ def final():
                     return ''.join(name)
 
 
-while True:
-    file = open('Tetris_Record.txt', 'a+')
+def main(q):
     pygame.init()
-    width, height = 1200, 650
+    global background
     background = pygame.display.set_mode((width, height))
     pygame.display.set_caption('Tetris')
-    clock = pygame.time.Clock()
 
-    gamewidth, gameheight = 300, 600
-    leftup = (200, 200)
-
-    back_d = {}
-    for i in range(0, 620, 20):
-        for j in range(0, 620, 20):
-            back_d[(i, j)] = 1
-    for i in range(200, 400, 20):
-        for j in range(160, 600, 20):
-            back_d[(i, j)] = 0
     start()
     l = (1, 'easy')
     draw_boundary(200, 200)
     draw_boundary(800, 200)
     score = game_loop(l[0])
-    # name = final()
-    # info = [l[1], str(score), str(name)]
-    # message = ','.join(info)
-    # file.write(message)
-    # file.write('\n')
-    # file.close()
-    # file = open('Tetris_Record.txt', 'r')
-    # listt = []
-    # s = file.readline()
-    # while s != '':
-    #     s = s.split(',')
-    #     if s[0] == l[1]:
-    #         listt.append((s[1], s[2].strip('\n')))
-    #     s = file.readline()
-    # listt = sorted(listt, key=lambda s: int(s[0]), reverse=True)
-    # listt = listt[:5]
-    # leader(l, listt, name)
 
-    # pygame.draw.rect(background, (0, 0, 0), (0, 0, 800, 800))
-    # pygame.display.update()
 
-    # print('level: ', l[1])
-    # print(listt[:5])
-    file.close()
+def signal(q):
+    while True:
+        q.put(input("Input:"))
+        # print(q.get())
+    # pass
+
+
+width, height = 1200, 650
+clock = pygame.time.Clock()
+
+gamewidth, gameheight = 300, 600
+leftup = (200, 200)
+back_d = {}
+for i in range(0, 640, 20):
+    for j in range(0, 640, 20):
+        back_d[(i, j)] = 1
+for i in range(200, 400, 20):
+    for j in range(160, 600, 20):
+        back_d[(i, j)] = 0
+
+
+main_thread = Thread(target=main, args=(q,))
+signal_thread = Thread(target=signal, args=(q,))
+
+
+main_thread.start()
+signal_thread.start()
+
+main_thread.join()
+signal_thread.join()
