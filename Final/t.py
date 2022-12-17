@@ -107,7 +107,8 @@ class blocks():
     def move(self, key):
         # if key == 'd':
         # print(back_d)
-        if key == pygame.K_DOWN:
+        if key == "d":
+            # if key == pygame.K_DOWN:
             self.draw(0)
             self.piece['y'] += self.length
             if self.isvalid():
@@ -121,8 +122,8 @@ class blocks():
                 self.draw(1)
                 return False
 
-        # elif key == 'l':
-        elif key == pygame.K_LEFT:
+        elif key == 'l':
+            # elif key == pygame.K_LEFT:
             self.draw(0)
             self.piece['x'] -= self.length
             if self.isvalid():
@@ -134,8 +135,8 @@ class blocks():
             else:
                 self.piece['x'] += self.length
 
-        # elif key == 'r':
-        elif key == pygame.K_RIGHT:
+        elif key == 'r':
+            # elif key == pygame.K_RIGHT:
             self.draw(0)
             self.piece['x'] += self.length
             if self.isvalid():
@@ -147,14 +148,14 @@ class blocks():
             else:
                 self.piece['x'] -= self.length
 
-        # elif key == 'u':
-        elif key == pygame.K_UP:
+        elif key == 'u':
+            # elif key == pygame.K_UP:
             self.draw(0)
             if self.can_rotate():
                 pygame.time.delay(10)
 
-        # elif key == 's':
-        elif key == pygame.K_SPACE:
+        elif key == ' ':
+            # elif key == pygame.K_SPACE:
             self.draw(0)
             oldy = self.piece['y']
             while self.isvalid():
@@ -520,7 +521,6 @@ def draw_status(shadow=0):
         for j in range(200, 600, 20):
             x = int((i - 200) / 20)
             y = int((j - 200) / 20)
-            # print(x, y, (i, j) in status, (i+600, j) in status)
             t.player0_main[x][y] = status[(i, j)]
             t.player1_main[x][y] = status[(i+600, j)]
 
@@ -536,7 +536,6 @@ def draw_status(shadow=0):
     t.player0_cbs = status["combo0"]
     t.player1_cbs = status["combo1"]
 
-    # fd.write(t)
     f.write(t)
 
 
@@ -563,32 +562,34 @@ def game_loop(level, player=0):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 crashed = True
-            if event.type == KEYDOWN:
-                # if event.key == K_p:
-                #     pygame.time.delay(10000)
+        if not q.empty():
+            # if event.type == KEYDOWN:
+            # if event.key == K_p:
+            #     pygame.time.delay(10000)
+            a1.draw(0)
+            order = q.get()
+            if not a.move(order):
                 a1.draw(0)
-                if not a.move(event.key):
-                    a1.draw(0)
-                    a.draw(1)
-                    a = a.touchdown(blist.new())
-                    shift = 0
-                    flag = clear()
-                    s, c = point.score(flag)
-                    sc(str(s), str(c))
-                if event.key == K_LSHIFT and not shift:
-                    # a.draw(0)
-                    update_status(a.piece['x'], a.piece['y'],
-                                  a.piece['shape'][a.piece['r']], a.length, 0, a.player)
-                    status["shift0"] = mapping[int(
-                        str(int(max(a.piece['shape'][a.piece['r']])))[0])]
-                    # pygame.draw.rect(background, (0, 0, 0),
-                    #                  (ll-120+5, tt+10, 90, 90))
-                    # a.piece['x'], a.piece['y'] = 90, 215
-                    # a.draw(1)
-                    a = blocks(blist.shift(), player)
-                    shift = 1
-                a1 = copy.deepcopy(a)
-                a1.shadow()
+                a.draw(1)
+                a = a.touchdown(blist.new())
+                shift = 0
+                flag = clear()
+                s, c = point.score(flag)
+                sc(str(s), str(c))
+            if order == "s" and not shift:
+                # a.draw(0)
+                update_status(a.piece['x'], a.piece['y'],
+                              a.piece['shape'][a.piece['r']], a.length, 0, a.player)
+                status["shift0"] = mapping[int(
+                    str(int(max(a.piece['shape'][a.piece['r']])))[0])]
+                # pygame.draw.rect(background, (0, 0, 0),
+                #                  (ll-120+5, tt+10, 90, 90))
+                # a.piece['x'], a.piece['y'] = 90, 215
+                # a.draw(1)
+                a = blocks(blist.shift(), player)
+                shift = 1
+            a1 = copy.deepcopy(a)
+            a1.shadow()
 
         # freefall
         if timer()-start > level:
@@ -675,6 +676,12 @@ def main(player=0):
     score = game_loop(l[0], player)
 
 
+def signal():
+    while True:
+        data = input("Order:")
+        q.put(data)
+
+
 width, height = 1200, 650
 clock = pygame.time.Clock()
 
@@ -703,7 +710,10 @@ specialKey = ["score0", "score1", "combo0",
               "combo1", "shift0", "shift1", "next0", "next1"]
 
 player0_thread = Thread(target=main, args=(0,))
+signal_thread = Thread(target=signal)
 
 player0_thread.start()
+signal_thread.start()
 
 player0_thread.join()
+signal_thread.join()

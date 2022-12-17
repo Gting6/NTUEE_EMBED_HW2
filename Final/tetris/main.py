@@ -574,7 +574,7 @@ while True:
     for i in range(300, 500, 20):
         for j in range(160, 600, 20):
             back_d[(i, j)] = 0
-    start()
+    # start()
     # l=level()
     l = (1.0, 'easy')
     draw_boundary()
