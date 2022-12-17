@@ -55,8 +55,9 @@ Stats stats = {
 };
 pthread_mutex_t stats_lock = PTHREAD_MUTEX_INITIALIZER;
 
-rgb_matrix::Color bg(100, 255, 200);	// white background
-rgb_matrix::Color text(255, 0, 255);	// white background
+rgb_matrix::Color bg(100, 255, 200);	// bright blue background
+rgb_matrix::Color score(255, 0, 255);	// bright yellow
+rgb_matrix::Color combo(255, 0, 102);	// combo
 
 rgb_matrix::Color EMPTY(0, 0, 0);	// void black
 rgb_matrix::Color I(23, 238, 222);	// light blue
@@ -102,7 +103,7 @@ void thread_read_fifo(const char* fifo_path) {
 	
 	if (interrupt_received) {
 		cerr << "thread end " << endl;
-		int err = unlink(fifo_path);
+		unlink(fifo_path);
 		return;
 	}
 
@@ -170,34 +171,16 @@ void draw_square_outline(FrameCanvas* offscreen_canvas, int x, int y) {
 void draw_background(FrameCanvas* offscreen_canvas, rgb_matrix::Font& font) {
 	int p2_x_offset = 32;
 	int next_shift_x_offset = 12;
-	int letter_spacing = 0;
 
 	// p1
 	draw_rectangle_outline(offscreen_canvas, RECTANGLE_X_OFFSET, RECTANGLE_Y_OFFSET);
 	draw_square_outline(offscreen_canvas, SQUARE_X_OFFSET, SQUARE_Y_OFFSET);
 	draw_square_outline(offscreen_canvas, SQUARE_X_OFFSET+next_shift_x_offset, SQUARE_Y_OFFSET);
-	/*int length = */rgb_matrix::DrawText(offscreen_canvas, font,
-								  0, 0 + font.baseline(),
-								  text, nullptr,
-								  "SCORE", letter_spacing);
-	rgb_matrix::DrawText(offscreen_canvas, font,
-								  0, 6 + font.baseline(),
-								  text, nullptr,
-								  "COMBO", letter_spacing);
-
 
 	// p2
 	draw_rectangle_outline(offscreen_canvas, RECTANGLE_X_OFFSET+p2_x_offset, RECTANGLE_Y_OFFSET);
 	draw_square_outline(offscreen_canvas, SQUARE_X_OFFSET+p2_x_offset, SQUARE_Y_OFFSET);
 	draw_square_outline(offscreen_canvas, SQUARE_X_OFFSET+next_shift_x_offset+p2_x_offset, SQUARE_Y_OFFSET);
-	rgb_matrix::DrawText(offscreen_canvas, font,
-								  0+p2_x_offset, 0 + font.baseline(),
-								  text, nullptr,
-								  "SCORE", letter_spacing);
-	rgb_matrix::DrawText(offscreen_canvas, font,
-								  0+p2_x_offset, 6 + font.baseline(),
-								  text, nullptr,
-								  "COMBO", letter_spacing);
 }
 
 void draw_pixel(FrameCanvas* offscreen_canvas, int x, int y, rgb_matrix::Color& color) {
@@ -276,12 +259,43 @@ void draw_square_content(FrameCanvas* offscreen_canvas) {
 }
 
 void draw_text(FrameCanvas* offscreen_canvas, rgb_matrix::Font& font) {
-/* TODO */
+	int p2_x_offset = 32;
 	int letter_spacing = 0;
-	rgb_matrix::DrawText(offscreen_canvas, font,
-								  20, 0 + font.baseline(),
-								  text, nullptr,
-								  "200", letter_spacing);
+	string X = "X";
+
+	rgb_matrix::DrawText(
+		offscreen_canvas, font,
+		5, 6 + font.baseline(),
+		score, nullptr,
+		to_string(stats.player0_pts).c_str(), 
+		letter_spacing
+	);
+	
+	rgb_matrix::DrawText(
+		offscreen_canvas, font,
+		5+p2_x_offset, 6 + font.baseline(),
+		score, nullptr,
+		to_string(stats.player1_pts).c_str(), letter_spacing
+	);
+
+	if (stats.player0_cbs) {
+		rgb_matrix::DrawText(
+			offscreen_canvas, font,
+			17, 6 + font.baseline(),
+			combo, nullptr,
+			strcat((char*)X.c_str(), to_string(stats.player0_pts).c_str()), 
+			letter_spacing
+		);
+	}
+	if (stats.player1_cbs) {
+		rgb_matrix::DrawText(
+			offscreen_canvas, font,
+			17+p2_x_offset, 6 + font.baseline(),
+			combo, nullptr,
+			strcat((char*)X.c_str(), to_string(stats.player0_pts).c_str()), 
+			letter_spacing
+		);
+	}
 }
 
 /* TODO */
@@ -300,36 +314,23 @@ class BackgroundThread : public rgb_matrix::ThreadedCanvasManipulator {
 	public:
 		BackgroundThread(RGBMatrix *matrix) : rgb_matrix::ThreadedCanvasManipulator(matrix), matrix_(matrix) {
 			offscreen_canvas = matrix->CreateFrameCanvas();
-			if (!font.LoadFont("../fonts/tom-thumb.bdf")) {
+			if (!font.LoadFont("./rpi-rgb-led-matrix/fonts/4x6.bdf")) {
 				cerr << "Couldn't load font\n";
 			}
 		}
 		virtual void Run() {
-			// unsigned char c;
-			// while (running()) {
-			// 	// Calculate the next frame.
-			// 	c++;
-			// 	for (int x = 0; x < canvas()->width(); ++x) {
-			// 		for (int y = 0; y < canvas()->height(); ++y) {
-			// 			canvas()->SetPixel(x, y, c, c, c);
-			// 		}
-			// 	}
-			// 	usleep(15 * 1000);
-			// }
-
 			draw_background(offscreen_canvas, font);
 			offscreen_canvas = matrix_->SwapOnVSync(offscreen_canvas);
 			draw_background(offscreen_canvas, font);
 
-
 			while (running() && !interrupt_received) {
-				offscreen_canvas->SetPixel(10, 10, 0, 0, 0);
+				// offscreen_canvas->SetPixel(10, 10, 0, 0, 0);
 				draw_stats(offscreen_canvas, font);
 				// Swap the offscreen_canvas with canvas on vsync, avoids flickering
 				offscreen_canvas = matrix_->SwapOnVSync(offscreen_canvas);
 				usleep(100000);	// sleep 0.1 s
 
-				offscreen_canvas->SetPixel(10, 10, 255, 0, 0);
+				// offscreen_canvas->SetPixel(10, 10, 255, 0, 0);
 				draw_stats(offscreen_canvas, font);
 				offscreen_canvas = matrix_->SwapOnVSync(offscreen_canvas);
 				usleep(100000);
@@ -359,9 +360,6 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	// pthread_t tid;
-	// err = pthread_create(&tid, NULL, thread_read_fifo, const_cast<char *> (fifo_path));
-
 	// set panel defaults config
 	RGBMatrix::Options panel_config;
 	panel_config.hardware_mapping = "regular";
@@ -383,9 +381,6 @@ int main(int argc, char **argv) {
 	// 	fprintf(stderr, "Couldn't load font\n");
 	// 	return 1;
 	// }
-
-	// rgb_matrix::Color test = id2color[1];
-	// cout << "r g b" << unsigned(test.r) << unsigned(test.g) << unsigned(test.b) << endl;
 
 	RGBMatrix *matrix = RGBMatrix::CreateFromOptions(panel_config, runtime_defaults);
 	//check if matrix is built
@@ -429,7 +424,7 @@ int main(int argc, char **argv) {
 		// timeout.tv_usec = 0;
 
 		while (!interrupt_received) {
-			cerr << "thread loop" << endl;
+			// cerr << "thread loop" << endl;
 			// ready = select(fifo_fd+1, &readset, NULL, NULL, &timeout);
 			// if (ready == 1) {
 			// 	cerr << "ready" << endl;
@@ -464,29 +459,4 @@ int main(int argc, char **argv) {
 	background_matrix->Stop();
 	delete background_matrix;
 	delete matrix;
-
-
-	// Create a new canvas to be used with led_matrix_swap_on_vsync
-	// FrameCanvas *offscreen_canvas = matrix->CreateFrameCanvas();
-	// draw_background(offscreen_canvas, font);
-	// offscreen_canvas = matrix->SwapOnVSync(offscreen_canvas);
-	// draw_background(offscreen_canvas, font);
-
-	// while (!interrupt_received) {
-	// 	offscreen_canvas->SetPixel(10, 10, 0, 0, 0);
-	// 	// draw_stats(offscreen_canvas);
-	// 	// Swap the offscreen_canvas with canvas on vsync, avoids flickering
-	// 	offscreen_canvas = matrix->SwapOnVSync(offscreen_canvas);
-	// 	usleep(100000);	// sleep 0.1 s
-
-	// 	offscreen_canvas->SetPixel(10, 10, 255, 0, 0);
-	// 	// draw_stats(offscreen_canvas);
-	// 	offscreen_canvas = matrix->SwapOnVSync(offscreen_canvas);
-	// 	usleep(100000);
-	// }
-
-	// pthread_join(tid, NULL);
-	//delete matrix in the end
-	// matrix->Clear();
-	// delete matrix;
 }
