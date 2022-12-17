@@ -4,6 +4,7 @@ import sys
 import pickle
 
 server = "172.20.10.2"  # my local ipv4 address, which will be server address
+# print("Server at", server)
 port = 5555  # typically safe
 
 # Use IPV4, sock_stream = get input string?
@@ -62,7 +63,16 @@ def threaded_client(conn, player):
                     reply = players[1]
                 pack = {}
                 for key in reply:
-                    pack[(key[0]+600, key[1])] = reply[key]
+                    if key == "combo0":
+                        pack["combo1"] = reply[key]
+                    elif key == "score0":
+                        pack["score1"] = reply[key]
+                    elif key == "shift0":
+                        pack["shift1"] = reply[key]
+                    elif key == "next0":
+                        pack["next1"] = reply[key]
+                    else:
+                        pack[(key[0]+600, key[1])] = reply[key]
                 # print("Received: ", data)
                 # print("Sending : ", reply)
             conn.sendall(pickle.dumps(pack))
