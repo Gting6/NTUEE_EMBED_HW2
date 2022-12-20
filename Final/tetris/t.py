@@ -245,7 +245,7 @@ class blockly():
         if not self.count:
             random.shuffle(self.block)
         self.next = self.block[self.count]
-        self.draw()
+        status["next0"] = mapping[int(str(int(max(self.next[2])))[0])]
         return t
 
     def shift(self):
@@ -256,25 +256,13 @@ class blockly():
             if not self.count:
                 random.shuffle(self.block)
             self.next = self.block[self.count]
-            self.draw()
+            status["next0"] = mapping[int(str(int(max(self.next[2])))[0])]
+            # self.draw()
             return self.cur
         self.hold, self.cur = self.cur, self.hold
         return self.cur
 
     def draw(self):
-        # pygame.draw.rect(background, (0, 0, 0),
-        #                  (self.inil+20+5, self.init+10, 90, 90))
-        # s, t = self.inil+30, self.init+15
-        # color = [(0, 255, 255), (255, 153, 0), (0, 0, 255),
-        #          (255, 255, 0), (0, 255, 0), (255, 0, 0), (102, 0, 255)]
-        # for col in self.next[0]:
-        #     for i in col:
-        #         if int(i):
-        #             rec = pygame.draw.rect(
-        #                 background, color[int(i)-1], (s, t, 20-5, 20-5))
-        #         s += 20
-        #     s = self.inil+30
-        #     t += 20
         return
 
 
@@ -433,19 +421,8 @@ def clear():
                     back_d[(s, t)] = back_d[(s, t-20)]
                     status[(s, t)] = status[(s, t-20)]
     if flag:
-        # color = [(0, 255, 255), (255, 153, 0), (0, 0, 255),
-        #  (255, 255, 0), (0, 255, 0), (255, 0, 0), (102, 0, 255)]
-        # for i in range(200, 400, 20):
-            # for j in range(200, 600, 20):
-                # status[(i, j)] = 0
-                # pygame.draw.rect(background, (0, 0, 0), (i+2, j+2, 15, 15))
-                # if back_d[(i, j)]:
-                    # status[(i, j)] = back_d[(i, j)] - 1
         draw_status()
         send_status()
-
-        # pygame.draw.rect(
-        #     background, color[back_d[(i, j)]-1], (i+2, j+2, 15, 15))
     return flag
 
 
@@ -513,6 +490,24 @@ def draw_status(shadow=0):
                 background, color[status["shift1"][i][j]], (s, t, 15, 15))
             s += 20
         s = 690
+        t += 20
+
+    s, t = 430, 225
+    for i in range(4):
+        for j in range(4):
+            pygame.draw.rect(
+                background, color[status["next0"][i][j]], (s, t, 15, 15))
+            s += 20
+        s = 430
+        t += 20
+
+    s, t = 1030, 225
+    for i in range(4):
+        for j in range(4):
+            pygame.draw.rect(
+                background, color[status["next1"][i][j]], (s, t, 15, 15))
+            s += 20
+        s = 1030
         t += 20
 
     # print(status)
@@ -586,7 +581,7 @@ def game_loop(level, player=0):
                 if order == K_LSHIFT and not shift:
                     # a.draw(0)
                     update_status(a.piece['x'], a.piece['y'],
-                                a.piece['shape'][a.piece['r']], a.length, 0, a.player)
+                                  a.piece['shape'][a.piece['r']], a.length, 0, a.player)
                     status["shift0"] = mapping[int(
                         str(int(max(a.piece['shape'][a.piece['r']])))[0])]
                     # pygame.draw.rect(background, (0, 0, 0),
