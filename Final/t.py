@@ -431,20 +431,10 @@ def clear():
             for t in range(j, 180, -20):
                 for s in range(200, 400, 20):
                     back_d[(s, t)] = back_d[(s, t-20)]
+                    status[(s, t)] = status[(s, t-20)]
     if flag:
-        # color = [(0, 255, 255), (255, 153, 0), (0, 0, 255),
-        #  (255, 255, 0), (0, 255, 0), (255, 0, 0), (102, 0, 255)]
-        for i in range(200, 400, 20):
-            for j in range(200, 600, 20):
-                status[(i, j)] = 0
-                # pygame.draw.rect(background, (0, 0, 0), (i+2, j+2, 15, 15))
-                if back_d[(i, j)]:
-                    status[(i, j)] = back_d[(i, j)] - 1
         draw_status()
         send_status()
-
-        # pygame.draw.rect(
-        #     background, color[back_d[(i, j)]-1], (i+2, j+2, 15, 15))
     return flag
 
 

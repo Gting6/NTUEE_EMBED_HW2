@@ -107,8 +107,8 @@ class blocks():
     def move(self, key):
         # if key == 'd':
         # print(back_d)
-        if key == "d":
-            # if key == pygame.K_DOWN:
+        # if key == "d":
+        if key == pygame.K_DOWN:
             self.draw(0)
             self.piece['y'] += self.length
             if self.isvalid():
@@ -122,8 +122,8 @@ class blocks():
                 self.draw(1)
                 return False
 
-        elif key == 'l':
-            # elif key == pygame.K_LEFT:
+        # elif key == 'l':
+        elif key == pygame.K_LEFT:
             self.draw(0)
             self.piece['x'] -= self.length
             if self.isvalid():
@@ -135,8 +135,8 @@ class blocks():
             else:
                 self.piece['x'] += self.length
 
-        elif key == 'r':
-            # elif key == pygame.K_RIGHT:
+        # elif key == 'r':
+        elif key == pygame.K_RIGHT:
             self.draw(0)
             self.piece['x'] += self.length
             if self.isvalid():
@@ -148,14 +148,14 @@ class blocks():
             else:
                 self.piece['x'] -= self.length
 
-        elif key == 'u':
-            # elif key == pygame.K_UP:
+        # elif key == 'u':
+        elif key == pygame.K_UP:
             self.draw(0)
             if self.can_rotate():
                 pygame.time.delay(10)
 
-        elif key == ' ':
-            # elif key == pygame.K_SPACE:
+        # elif key == ' ':
+        elif key == pygame.K_SPACE:
             self.draw(0)
             oldy = self.piece['y']
             while self.isvalid():
@@ -431,15 +431,16 @@ def clear():
             for t in range(j, 180, -20):
                 for s in range(200, 400, 20):
                     back_d[(s, t)] = back_d[(s, t-20)]
+                    status[(s, t)] = status[(s, t-20)]
     if flag:
         # color = [(0, 255, 255), (255, 153, 0), (0, 0, 255),
         #  (255, 255, 0), (0, 255, 0), (255, 0, 0), (102, 0, 255)]
-        for i in range(200, 400, 20):
-            for j in range(200, 600, 20):
-                status[(i, j)] = 0
+        # for i in range(200, 400, 20):
+            # for j in range(200, 600, 20):
+                # status[(i, j)] = 0
                 # pygame.draw.rect(background, (0, 0, 0), (i+2, j+2, 15, 15))
-                if back_d[(i, j)]:
-                    status[(i, j)] = back_d[(i, j)] - 1
+                # if back_d[(i, j)]:
+                    # status[(i, j)] = back_d[(i, j)] - 1
         draw_status()
         send_status()
 
@@ -566,34 +567,36 @@ def game_loop(level, player=0):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 crashed = True
-        if not q.empty():
-            # if event.type == KEYDOWN:
-            # if event.key == K_p:
-            #     pygame.time.delay(10000)
-            a1.draw(0)
-            order = q.get()
-            if not a.move(order):
+        # if not q.empty():
+            if event.type == KEYDOWN:
+                if event.key == K_p:
+                    pygame.time.delay(10000)
                 a1.draw(0)
-                a.draw(1)
-                a = a.touchdown(blist.new())
-                shift = 0
-                flag = clear()
-                s, c = point.score(flag)
-                sc(str(s), str(c))
-            if order == "s" and not shift:
-                # a.draw(0)
-                update_status(a.piece['x'], a.piece['y'],
-                              a.piece['shape'][a.piece['r']], a.length, 0, a.player)
-                status["shift0"] = mapping[int(
-                    str(int(max(a.piece['shape'][a.piece['r']])))[0])]
-                # pygame.draw.rect(background, (0, 0, 0),
-                #                  (ll-120+5, tt+10, 90, 90))
-                # a.piece['x'], a.piece['y'] = 90, 215
-                # a.draw(1)
-                a = blocks(blist.shift(), player)
-                shift = 1
-            a1 = copy.deepcopy(a)
-            a1.shadow()
+                order = event.key
+                # order = q.get()
+                if not a.move(order):
+                    a1.draw(0)
+                    a.draw(1)
+                    a = a.touchdown(blist.new())
+                    shift = 0
+                    flag = clear()
+                    s, c = point.score(flag)
+                    sc(str(s), str(c))
+                # if order == "s" and not shift:
+                if order == K_LSHIFT and not shift:
+                    # a.draw(0)
+                    update_status(a.piece['x'], a.piece['y'],
+                                a.piece['shape'][a.piece['r']], a.length, 0, a.player)
+                    status["shift0"] = mapping[int(
+                        str(int(max(a.piece['shape'][a.piece['r']])))[0])]
+                    # pygame.draw.rect(background, (0, 0, 0),
+                    #                  (ll-120+5, tt+10, 90, 90))
+                    # a.piece['x'], a.piece['y'] = 90, 215
+                    # a.draw(1)
+                    a = blocks(blist.shift(), player)
+                    shift = 1
+                a1 = copy.deepcopy(a)
+                a1.shadow()
 
         # freefall
         if timer()-start > level:
