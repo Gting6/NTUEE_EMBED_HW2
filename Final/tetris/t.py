@@ -128,9 +128,9 @@ class blocks():
             self.piece['x'] -= self.length
             if self.isvalid():
                 update_status(self.piece['x']+self.length, self.piece['y'],
-                              self.piece['shape'][self.piece['r']], self.length, 0, self.player)
+                              self.piece['shape'][self.piece['r']], self.length, 0, self.player, 1)
                 update_status(self.piece['x'], self.piece['y'],
-                              self.piece['shape'][self.piece['r']], self.length, 1, self.player)
+                              self.piece['shape'][self.piece['r']], self.length, 1, self.player, 1)
                 pygame.time.delay(100)
             else:
                 self.piece['x'] += self.length
@@ -141,9 +141,9 @@ class blocks():
             self.piece['x'] += self.length
             if self.isvalid():
                 update_status(self.piece['x']-self.length, self.piece['y'],
-                              self.piece['shape'][self.piece['r']], self.length, 0, self.player)
+                              self.piece['shape'][self.piece['r']], self.length, 0, self.player, 1)
                 update_status(self.piece['x'], self.piece['y'],
-                              self.piece['shape'][self.piece['r']], self.length, 1, self.player)
+                              self.piece['shape'][self.piece['r']], self.length, 1, self.player, 1)
                 pygame.time.delay(100)
             else:
                 self.piece['x'] -= self.length
@@ -196,9 +196,9 @@ class blocks():
                 self.piece['y'] -= self.length
         if self.isvalid():
             update_status(x, y, self.piece['shape']
-                          [r], self.length, 0, self.player)
+                          [r], self.length, 0, self.player, 1)
             update_status(self.piece['x'], self.piece['y'],
-                          self.piece['shape'][self.piece['r']], self.length, 1, self.player)
+                          self.piece['shape'][self.piece['r']], self.length, 1, self.player, 1)
             return True
         self.piece['x'] = x
         self.piece['y'] = y
@@ -219,6 +219,10 @@ class blocks():
         while self.isvalid():
             self.piece['y'] += self.length
         self.piece['y'] -= self.length
+
+        update_status(self.piece['x'], self.piece['y'],
+                      self.piece['shape'][self.piece['r']], self.length, 2, self.player, 1)
+
         self.draw(1, 1)
         return
 
@@ -431,7 +435,12 @@ def clear():
 # l = self.piece['shape'][self.piece['r']]
 # length = self.length
 # mode 0 = erase
-def update_status(x, y, l, length, mode, player=0):
+def update_status(x, y, l, length, mode,  player=0,  cleanShadow=0):
+    if cleanShadow:
+        for key in status:
+            if status[key] == 8:
+                status[key] = 0
+
     for i in range(len(l)):
         for j in range(len(l)):
             m = int(x+length*j) + player * 600
@@ -440,6 +449,9 @@ def update_status(x, y, l, length, mode, player=0):
                 continue
             if mode == 1:
                 status[(m, n)] = int(l[i][j])
+            elif mode == 2:
+                if status[(m, n)] == 0:
+                    status[(m, n)] = 8  # shadow
             else:
                 status[(m, n)] = 0
     draw_status()
@@ -464,14 +476,19 @@ def send_status():
 
 def draw_status(shadow=0):
     color = [(0, 0, 0), (0, 255, 255), (255, 153, 0), (0, 0, 255),
-             (255, 255, 0), (0, 255, 0), (255, 0, 0), (102, 0, 255)]
+             (255, 255, 0), (0, 255, 0), (255, 0, 0), (102, 0, 255), (128, 128, 128)]
     for key in status:
         if key in specialKey:
             continue
         s, t = key[0] + 2, key[1] + 2
         if t < 200:
             continue
-        pygame.draw.rect(background, color[status[key]], (s, t, 15, 15))
+        if status[key] != 8:
+            pygame.draw.rect(background, color[status[key]], (s, t, 15, 15))
+        else:
+            pygame.draw.rect(background, color[8], (s, t, 15, 15))
+            pygame.draw.rect(background, (0, 0, 0), (s+2, t+2, 11, 11))
+
     sc(str(status["score0"]), str(status["combo0"]))
 
     s, t = 90, 225
@@ -581,7 +598,7 @@ def game_loop(level, player=0):
                 if order == K_LSHIFT and not shift:
                     # a.draw(0)
                     update_status(a.piece['x'], a.piece['y'],
-                                  a.piece['shape'][a.piece['r']], a.length, 0, a.player)
+                                  a.piece['shape'][a.piece['r']], a.length, 0, a.player, 1)
                     status["shift0"] = mapping[int(
                         str(int(max(a.piece['shape'][a.piece['r']])))[0])]
                     # pygame.draw.rect(background, (0, 0, 0),
