@@ -414,6 +414,29 @@ def start():
                     pygame.quit()
 
 
+def waiting():
+    draw_boundary(200, 200)
+    draw_boundary(800, 200)
+    smallText_t = pygame.font.SysFont('comicsansms', 30)
+    textSurf_t, textRect_t = text_objects(
+        'Waiting ...', smallText_t)
+    textRect_t.center = (300, 350)
+    background.blit(textSurf_t, textRect_t)
+    pygame.display.update()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == KEYDOWN:
+                if event.key == K_q:
+                    return
+        send_status()
+        if status["game"] > 1:
+            status["game"] = 2
+            return
+        clock.tick(60)
+        # pygame.time.wait(1000)
+
+
 def clear():
     global back_d
     flag = 0
@@ -468,6 +491,7 @@ def send_status():
     package["combo0"] = status["combo0"]
     package["shift0"] = status["shift0"]
     package["next0"] = status["next0"]
+    package["game"] = status["game"]
     status.update(n.send(package))
     # print("T received!", n.send(package))
 
@@ -559,6 +583,9 @@ def draw_status(shadow=0):
 def game_loop(level, player=0):
     ll = 200
     tt = 200
+
+    # waiting()
+
     start = timer()
     crashed = False
     blist = blockly()
@@ -622,12 +649,77 @@ def game_loop(level, player=0):
                 sc(str(s), str(c))
             start = timer()
 
+        pygame.draw.rect(background, (0, 0, 0), (550, 190, 100, 50))
+
+        smallText = pygame.font.SysFont('comicsansms', 20)
+        textSurf1, textRect1 = text_objects(
+            'Time : '+str(gameTime), smallText)
+        textRect1.center = (600, 200)
+        background.blit(textSurf1, textRect1)
+        pygame.display.update()
+
         a.draw(1)
         pygame.display.update()
         clock.tick(60)
         draw_status()
         send_status()
+        if status["game"] > 2:
+            winner(status["game"])
+            return
+    status["game"] = 6
+    send_status()
+    winner(4)
+
     return s
+
+
+constTime = 29
+
+
+def winner(win):
+    draw_boundary(200, 200)
+    draw_boundary(800, 200)
+    sc(str(status["score0"]), str(status["combo0"]))
+
+    smallText_t = pygame.font.SysFont('comicsansms', 30)
+
+    if win == 3:
+        textSurf_t, textRect_t = text_objects(
+            'You Win!', smallText_t)
+    elif win == 4:
+        textSurf_t, textRect_t = text_objects(
+            'You Lose!', smallText_t)
+    else:
+        textSurf_t, textRect_t = text_objects(
+            'Tie ...', smallText_t)
+
+    textRect_t.center = (300, 350)
+    background.blit(textSurf_t, textRect_t)
+    pygame.display.update()
+
+    for key in status:
+        if key == "game":
+            status[key] = 6
+        elif key == "shift0" or key == "shift1" or key == "next0" or key == "next1":
+            status[key] = LE
+        else:
+            status[key] = 0
+    send_status()
+    time.sleep(10)
+
+
+def countDown():
+    global gameTime
+    gameTime = constTime
+    while gameTime:
+        time.sleep(1)
+        print(status["game"])
+        if status["game"] != 2:
+            gameTime = constTime
+        gameTime -= 1
+        # print(gameTime, players[0]["game"], players[1]["game"])
+    gameTime = constTime
+    countDown()
 
 
 def final():
@@ -671,7 +763,6 @@ def final():
 
 
 def main(player=0):
-    global n
     # global f
     # file_name = 'panel.fifo'
     # if not os.path.exists(file_name):
@@ -680,15 +771,20 @@ def main(player=0):
     # fd = os.open(file_name, os.O_RDWR)
     # f = io.FileIO(fd, 'wb')
 
-    n = Network()
     global status
-
     pygame.init()
     global background
     background = pygame.display.set_mode((width, height))
     pygame.display.set_caption('Tetris')
 
-    # start()
+    start()
+    global n
+    n = Network()
+    status["game"] = 1
+    send_status()
+    if status["game"] == 1:
+        waiting()
+    status["game"] = 2
     l = (1, 'easy')
     draw_boundary(200, 200)
     draw_boundary(800, 200)
@@ -725,14 +821,20 @@ for i in range(800, 1000, 20):
     for j in range(160, 600, 20):
         status[(i, j)] = 0
 
+status["game"] = 0
+status["time"] = 99
+
 specialKey = ["score0", "score1", "combo0",
-              "combo1", "shift0", "shift1", "next0", "next1"]
+              "combo1", "shift0", "shift1", "next0", "next1", "game", "time"]
 
 player0_thread = Thread(target=main, args=(0,))
+time_thread = Thread(target=countDown)
 signal_thread = Thread(target=signal)
 
 player0_thread.start()
+time_thread.start()
 signal_thread.start()
 
 player0_thread.join()
+time_thread.join()
 signal_thread.join()
