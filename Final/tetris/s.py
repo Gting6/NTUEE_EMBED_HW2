@@ -159,15 +159,15 @@ def countDown():
         if players[0]["game"] + players[1]["game"] != 4:
             gameTime = constTime
         gameTime -= 1
-        print(gameTime, players[0]["game"], players[1]["game"])
+        # print(gameTime, players[0]["game"], players[1]["game"])
 
     tmp0 = decideGame(0)
-    print("OVER!", players[0]["game"], players[1]["game"])
+    # print("OVER!", players[0]["game"], players[1]["game"])
 
     while players[0]["game"] > 0 or players[1]["game"] > 0:
         time.sleep(1)
         gameTime = 0
-        print(gameTime, players[0]["game"], players[1]["game"])
+        # print(gameTime, players[0]["game"], players[1]["game"])
 
     gameTime = constTime
 

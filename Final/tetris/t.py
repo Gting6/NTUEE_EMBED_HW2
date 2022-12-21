@@ -713,7 +713,7 @@ def countDown():
     gameTime = constTime
     while gameTime:
         time.sleep(1)
-        print(status["game"])
+        # print(status["game"])
         if status["game"] != 2:
             gameTime = constTime
         gameTime -= 1
