@@ -72,7 +72,10 @@ def threaded_client(conn, player):
                     elif key == "next0":
                         pack["next1"] = reply[key]
                     else:
-                        pack[(key[0]+600, key[1])] = reply[key]
+                        if reply[key] == 8:  # we don't show shadow on enemy to avoid some bug
+                            pack[(key[0]+600, key[1])] = 0
+                        else:
+                            pack[(key[0]+600, key[1])] = reply[key]
                 # print("Received: ", data)
                 # print("Sending : ", reply)
             conn.sendall(pickle.dumps(pack))

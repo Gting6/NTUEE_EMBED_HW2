@@ -107,7 +107,8 @@ class blocks():
     def move(self, key):
         # if key == 'd':
         # print(back_d)
-        if key == pygame.K_DOWN:
+        if key == "d":
+            # if key == pygame.K_DOWN:
             self.draw(0)
             self.piece['y'] += self.length
             if self.isvalid():
@@ -121,40 +122,40 @@ class blocks():
                 self.draw(1)
                 return False
 
-        # elif key == 'l':
-        elif key == pygame.K_LEFT:
+        elif key == 'l':
+            # elif key == pygame.K_LEFT:
             self.draw(0)
             self.piece['x'] -= self.length
             if self.isvalid():
                 update_status(self.piece['x']+self.length, self.piece['y'],
-                              self.piece['shape'][self.piece['r']], self.length, 0, self.player)
+                              self.piece['shape'][self.piece['r']], self.length, 0, self.player, 1)
                 update_status(self.piece['x'], self.piece['y'],
-                              self.piece['shape'][self.piece['r']], self.length, 1, self.player)
+                              self.piece['shape'][self.piece['r']], self.length, 1, self.player, 1)
                 pygame.time.delay(100)
             else:
                 self.piece['x'] += self.length
 
-        # elif key == 'r':
-        elif key == pygame.K_RIGHT:
+        elif key == 'r':
+            # elif key == pygame.K_RIGHT:
             self.draw(0)
             self.piece['x'] += self.length
             if self.isvalid():
                 update_status(self.piece['x']-self.length, self.piece['y'],
-                              self.piece['shape'][self.piece['r']], self.length, 0, self.player)
+                              self.piece['shape'][self.piece['r']], self.length, 0, self.player, 1)
                 update_status(self.piece['x'], self.piece['y'],
-                              self.piece['shape'][self.piece['r']], self.length, 1, self.player)
+                              self.piece['shape'][self.piece['r']], self.length, 1, self.player, 1)
                 pygame.time.delay(100)
             else:
                 self.piece['x'] -= self.length
 
-        # elif key == 'u':
-        elif key == pygame.K_UP:
+        elif key == 'u':
+            # elif key == pygame.K_UP:
             self.draw(0)
             if self.can_rotate():
                 pygame.time.delay(10)
 
-        # elif key == 's':
-        elif key == pygame.K_SPACE:
+        elif key == ' ':
+            # elif key == pygame.K_SPACE:
             self.draw(0)
             oldy = self.piece['y']
             while self.isvalid():
@@ -195,9 +196,9 @@ class blocks():
                 self.piece['y'] -= self.length
         if self.isvalid():
             update_status(x, y, self.piece['shape']
-                          [r], self.length, 0, self.player)
+                          [r], self.length, 0, self.player, 1)
             update_status(self.piece['x'], self.piece['y'],
-                          self.piece['shape'][self.piece['r']], self.length, 1, self.player)
+                          self.piece['shape'][self.piece['r']], self.length, 1, self.player, 1)
             return True
         self.piece['x'] = x
         self.piece['y'] = y
@@ -218,6 +219,10 @@ class blocks():
         while self.isvalid():
             self.piece['y'] += self.length
         self.piece['y'] -= self.length
+
+        update_status(self.piece['x'], self.piece['y'],
+                      self.piece['shape'][self.piece['r']], self.length, 2, self.player, 1)
+
         self.draw(1, 1)
         return
 
@@ -244,7 +249,7 @@ class blockly():
         if not self.count:
             random.shuffle(self.block)
         self.next = self.block[self.count]
-        self.draw()
+        status["next0"] = mapping[int(str(int(max(self.next[2])))[0])]
         return t
 
     def shift(self):
@@ -255,25 +260,12 @@ class blockly():
             if not self.count:
                 random.shuffle(self.block)
             self.next = self.block[self.count]
-            self.draw()
+            status["next0"] = mapping[int(str(int(max(self.next[2])))[0])]
             return self.cur
         self.hold, self.cur = self.cur, self.hold
         return self.cur
 
     def draw(self):
-        # pygame.draw.rect(background, (0, 0, 0),
-        #                  (self.inil+20+5, self.init+10, 90, 90))
-        # s, t = self.inil+30, self.init+15
-        # color = [(0, 255, 255), (255, 153, 0), (0, 0, 255),
-        #          (255, 255, 0), (0, 255, 0), (255, 0, 0), (102, 0, 255)]
-        # for col in self.next[0]:
-        #     for i in col:
-        #         if int(i):
-        #             rec = pygame.draw.rect(
-        #                 background, color[int(i)-1], (s, t, 20-5, 20-5))
-        #         s += 20
-        #     s = self.inil+30
-        #     t += 20
         return
 
 
@@ -430,20 +422,10 @@ def clear():
             for t in range(j, 180, -20):
                 for s in range(200, 400, 20):
                     back_d[(s, t)] = back_d[(s, t-20)]
+                    status[(s, t)] = status[(s, t-20)]
     if flag:
-        # color = [(0, 255, 255), (255, 153, 0), (0, 0, 255),
-        #  (255, 255, 0), (0, 255, 0), (255, 0, 0), (102, 0, 255)]
-        for i in range(200, 400, 20):
-            for j in range(200, 600, 20):
-                status[(i, j)] = 0
-                # pygame.draw.rect(background, (0, 0, 0), (i+2, j+2, 15, 15))
-                if back_d[(i, j)]:
-                    status[(i, j)] = back_d[(i, j)] - 1
         draw_status()
         send_status()
-
-        # pygame.draw.rect(
-        #     background, color[back_d[(i, j)]-1], (i+2, j+2, 15, 15))
     return flag
 
 
@@ -452,7 +434,11 @@ def clear():
 # l = self.piece['shape'][self.piece['r']]
 # length = self.length
 # mode 0 = erase
-def update_status(x, y, l, length, mode, player=0):
+def update_status(x, y, l, length, mode,  player=0,  cleanShadow=0):
+    if cleanShadow:
+        for key in status:
+            if status[key] == 8:
+                status[key] = 0
     for i in range(len(l)):
         for j in range(len(l)):
             m = int(x+length*j) + player * 600
@@ -461,6 +447,9 @@ def update_status(x, y, l, length, mode, player=0):
                 continue
             if mode == 1:
                 status[(m, n)] = int(l[i][j])
+            elif mode == 2:
+                if status[(m, n)] == 0:
+                    status[(m, n)] = 8  # shadow
             else:
                 status[(m, n)] = 0
     draw_status()
@@ -485,14 +474,18 @@ def send_status():
 
 def draw_status(shadow=0):
     color = [(0, 0, 0), (0, 255, 255), (255, 153, 0), (0, 0, 255),
-             (255, 255, 0), (0, 255, 0), (255, 0, 0), (102, 0, 255)]
+             (255, 255, 0), (0, 255, 0), (255, 0, 0), (102, 0, 255), (128, 128, 128)]
     for key in status:
         if key in specialKey:
             continue
         s, t = key[0] + 2, key[1] + 2
         if t < 200:
             continue
-        pygame.draw.rect(background, color[status[key]], (s, t, 15, 15))
+        if status[key] != 8:
+            pygame.draw.rect(background, color[status[key]], (s, t, 15, 15))
+        else:
+            pygame.draw.rect(background, color[8], (s, t, 15, 15))
+            pygame.draw.rect(background, (0, 0, 0), (s+2, t+2, 11, 11))
     sc(str(status["score0"]), str(status["combo0"]))
 
     s, t = 90, 225
@@ -513,6 +506,24 @@ def draw_status(shadow=0):
         s = 690
         t += 20
 
+    s, t = 430, 225
+    for i in range(4):
+        for j in range(4):
+            pygame.draw.rect(
+                background, color[status["next0"][i][j]], (s, t, 15, 15))
+            s += 20
+        s = 430
+        t += 20
+
+    s, t = 1030, 225
+    for i in range(4):
+        for j in range(4):
+            pygame.draw.rect(
+                background, color[status["next1"][i][j]], (s, t, 15, 15))
+            s += 20
+        s = 1030
+        t += 20
+
     # print(status)
     t = Info()
 
@@ -520,7 +531,6 @@ def draw_status(shadow=0):
         for j in range(200, 600, 20):
             x = int((i - 200) / 20)
             y = int((j - 200) / 20)
-            # print(x, y, (i, j) in status, (i+600, j) in status)
             t.player0_main[x][y] = status[(i, j)]
             t.player1_main[x][y] = status[(i+600, j)]
 
@@ -536,7 +546,6 @@ def draw_status(shadow=0):
     t.player0_cbs = status["combo0"]
     t.player1_cbs = status["combo1"]
 
-    # fd.write(t)
     f.write(t)
 
 
@@ -563,32 +572,34 @@ def game_loop(level, player=0):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 crashed = True
-            if event.type == KEYDOWN:
-                # if event.key == K_p:
-                #     pygame.time.delay(10000)
+        if not q.empty():
+            # if event.type == KEYDOWN:
+            # if event.key == K_p:
+            #     pygame.time.delay(10000)
+            a1.draw(0)
+            order = q.get()
+            if not a.move(order):
                 a1.draw(0)
-                if not a.move(event.key):
-                    a1.draw(0)
-                    a.draw(1)
-                    a = a.touchdown(blist.new())
-                    shift = 0
-                    flag = clear()
-                    s, c = point.score(flag)
-                    sc(str(s), str(c))
-                if event.key == K_LSHIFT and not shift:
-                    # a.draw(0)
-                    update_status(a.piece['x'], a.piece['y'],
-                                  a.piece['shape'][a.piece['r']], a.length, 0, a.player)
-                    status["shift0"] = mapping[int(
-                        str(int(max(a.piece['shape'][a.piece['r']])))[0])]
-                    # pygame.draw.rect(background, (0, 0, 0),
-                    #                  (ll-120+5, tt+10, 90, 90))
-                    # a.piece['x'], a.piece['y'] = 90, 215
-                    # a.draw(1)
-                    a = blocks(blist.shift(), player)
-                    shift = 1
-                a1 = copy.deepcopy(a)
-                a1.shadow()
+                a.draw(1)
+                a = a.touchdown(blist.new())
+                shift = 0
+                flag = clear()
+                s, c = point.score(flag)
+                sc(str(s), str(c))
+            if order == "s" and not shift:
+                # a.draw(0)
+                update_status(a.piece['x'], a.piece['y'],
+                              a.piece['shape'][a.piece['r']], a.length, 0, a.player, 1)
+                status["shift0"] = mapping[int(
+                    str(int(max(a.piece['shape'][a.piece['r']])))[0])]
+                # pygame.draw.rect(background, (0, 0, 0),
+                #                  (ll-120+5, tt+10, 90, 90))
+                # a.piece['x'], a.piece['y'] = 90, 215
+                # a.draw(1)
+                a = blocks(blist.shift(), player)
+                shift = 1
+            a1 = copy.deepcopy(a)
+            a1.shadow()
 
         # freefall
         if timer()-start > level:
@@ -675,6 +686,12 @@ def main(player=0):
     score = game_loop(l[0], player)
 
 
+def signal():
+    while True:
+        data = input("Order:")
+        q.put(data)
+
+
 width, height = 1200, 650
 clock = pygame.time.Clock()
 
@@ -703,7 +720,10 @@ specialKey = ["score0", "score1", "combo0",
               "combo1", "shift0", "shift1", "next0", "next1"]
 
 player0_thread = Thread(target=main, args=(0,))
+signal_thread = Thread(target=signal)
 
 player0_thread.start()
+signal_thread.start()
 
 player0_thread.join()
+signal_thread.join()
