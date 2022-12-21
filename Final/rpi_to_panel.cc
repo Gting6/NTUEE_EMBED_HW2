@@ -39,6 +39,8 @@ typedef struct Stats {
 	int player1_next[4][4];
 	int player1_pts;
 	int player1_cbs;
+	int game;
+	int time;
 } Stats;
 
 Stats stats = {
@@ -52,21 +54,42 @@ Stats stats = {
 	{0},
 	0,
 	0,
+	0,
+	0
 };
 pthread_mutex_t stats_lock = PTHREAD_MUTEX_INITIALIZER;
 
-rgb_matrix::Color bg(100, 255, 200);	// bright blue background
-rgb_matrix::Color score(255, 0, 255);	// bright yellow
-rgb_matrix::Color combo(255, 0, 102);	// combo
+rgb_matrix::Color bg(100, 255, 200);		// bright blue background
+rgb_matrix::Color score(255, 0, 255);		// bright yellow
+rgb_matrix::Color combo(255, 0, 102);		// combo
+rgb_matrix::Color text(255, 0, 0);			// text
 
-rgb_matrix::Color EMPTY(0, 0, 0);	// void black
-rgb_matrix::Color I(23, 238, 222);	// light blue
-rgb_matrix::Color J(3, 174, 65);	// deep blue
-rgb_matrix::Color L(255, 28, 151);	// orange
-rgb_matrix::Color O(255, 0, 213);	// yellow
-rgb_matrix::Color S(114, 59, 203);	// green
-rgb_matrix::Color T(118, 175, 55);	// purple
-rgb_matrix::Color Z(255, 19, 50);	// red
+rgb_matrix::Color EMPTY(0, 0, 0);			// void black
+rgb_matrix::Color SHADOW(128, 128, 128);	// gray
+rgb_matrix::Color I(23, 238, 222);			// light blue
+rgb_matrix::Color J(3, 174, 65);			// deep blue
+rgb_matrix::Color L(255, 28, 151);			// orange
+rgb_matrix::Color O(255, 0, 213);			// yellow
+rgb_matrix::Color S(114, 59, 203);			// green
+rgb_matrix::Color T(118, 175, 55);			// purple
+rgb_matrix::Color Z(255, 19, 50);			// red
+
+void RGB(rgb_matrix::Color& color) {
+	if (color.g < 255 && color.r != 0) {
+		color.g += 2;
+	} else if (color.g > 0 && color.r <= 0) {
+		color.g -= 2;
+	}
+
+	if (color.r > 0) {
+		color.r -= 4;
+	} else if (color.r <= 0 && color.b < 255) {
+		color.b += 4;
+	} else if (color.r <= 0 && color.b >= 255) {
+		color.r = 255;
+		color.b = 0;
+	}
+}
 
 unordered_map<int, rgb_matrix::Color> id2color = {
 	{0, EMPTY},
@@ -76,7 +99,8 @@ unordered_map<int, rgb_matrix::Color> id2color = {
 	{4, O},
 	{5, S},
 	{6, T},
-	{7, Z}
+	{7, Z},
+	{8, SHADOW}
 };
 
 // Make sure we can exit gracefully when Ctrl-C is pressed.
@@ -168,19 +192,84 @@ void draw_square_outline(FrameCanvas* offscreen_canvas, int x, int y) {
 	}
 }
 
+void draw_game_status(FrameCanvas* offscreen_canvas, rgb_matrix::Font& font) {
+	int letter_spacing = 0;
+	string ZERO = "0";
+
+	switch(stats.game) {
+		case 0:		// IDLE
+			rgb_matrix::DrawText(
+				offscreen_canvas, font,
+				6, 23 + font.baseline(),
+				text, nullptr,
+				"Tetris Battle", 
+				letter_spacing
+			);
+			break;
+		case 1:		// p0 join
+			rgb_matrix::DrawText(
+				offscreen_canvas, font,
+				16, 0 + font.baseline(),
+				text, nullptr,
+				"Wait P1...", 
+				letter_spacing
+			);
+			break;
+		case 2:		// p1 join, game start
+			rgb_matrix::DrawText(
+				offscreen_canvas, font,
+				28, 12 + font.baseline(),
+				score, nullptr,
+				(stats.time < 10) ? strcat((char*)ZERO.c_str(), to_string(stats.time).c_str()) : to_string(stats.time).c_str(), 
+				1
+			);
+			break;
+		case 3:		// p0 win
+			rgb_matrix::DrawText(
+				offscreen_canvas, font,
+				18, 0 + font.baseline(),
+				text, nullptr,
+				"P0 Win!", 
+				letter_spacing
+			);
+			break;
+		case 4:		// p1 win
+			rgb_matrix::DrawText(
+				offscreen_canvas, font,
+				18, 0 + font.baseline(),
+				text, nullptr,
+				"P1 Win!", 
+				letter_spacing
+			);
+			break;
+		default:
+			rgb_matrix::DrawText(
+				offscreen_canvas, font,
+				6, 23 + font.baseline(),
+				text, nullptr,
+				"Tetris Battle", 
+				letter_spacing
+			);
+	}
+}
+
 void draw_background(FrameCanvas* offscreen_canvas, rgb_matrix::Font& font) {
 	int p2_x_offset = 32;
 	int next_shift_x_offset = 12;
 
-	// p1
-	draw_rectangle_outline(offscreen_canvas, RECTANGLE_X_OFFSET, RECTANGLE_Y_OFFSET);
-	draw_square_outline(offscreen_canvas, SQUARE_X_OFFSET, SQUARE_Y_OFFSET);
-	draw_square_outline(offscreen_canvas, SQUARE_X_OFFSET+next_shift_x_offset, SQUARE_Y_OFFSET);
+	if (stats.game == 0) {		// IDLE
+		offscreen_canvas->Fill(0, 0, 0);
+	} else {
+		// p1
+		draw_rectangle_outline(offscreen_canvas, RECTANGLE_X_OFFSET, RECTANGLE_Y_OFFSET);
+		draw_square_outline(offscreen_canvas, SQUARE_X_OFFSET, SQUARE_Y_OFFSET);
+		draw_square_outline(offscreen_canvas, SQUARE_X_OFFSET+next_shift_x_offset, SQUARE_Y_OFFSET);
 
-	// p2
-	draw_rectangle_outline(offscreen_canvas, RECTANGLE_X_OFFSET+p2_x_offset, RECTANGLE_Y_OFFSET);
-	draw_square_outline(offscreen_canvas, SQUARE_X_OFFSET+p2_x_offset, SQUARE_Y_OFFSET);
-	draw_square_outline(offscreen_canvas, SQUARE_X_OFFSET+next_shift_x_offset+p2_x_offset, SQUARE_Y_OFFSET);
+		// p2
+		draw_rectangle_outline(offscreen_canvas, RECTANGLE_X_OFFSET+p2_x_offset, RECTANGLE_Y_OFFSET);
+		draw_square_outline(offscreen_canvas, SQUARE_X_OFFSET+p2_x_offset, SQUARE_Y_OFFSET);
+		draw_square_outline(offscreen_canvas, SQUARE_X_OFFSET+next_shift_x_offset+p2_x_offset, SQUARE_Y_OFFSET);
+	}
 }
 
 void draw_pixel(FrameCanvas* offscreen_canvas, int x, int y, rgb_matrix::Color& color) {
@@ -263,20 +352,22 @@ void draw_text(FrameCanvas* offscreen_canvas, rgb_matrix::Font& font) {
 	int letter_spacing = 0;
 	string X = "X";
 
-	rgb_matrix::DrawText(
-		offscreen_canvas, font,
-		5, 6 + font.baseline(),
-		score, nullptr,
-		to_string(stats.player0_pts).c_str(), 
-		letter_spacing
-	);
-	
-	rgb_matrix::DrawText(
-		offscreen_canvas, font,
-		5+p2_x_offset, 6 + font.baseline(),
-		score, nullptr,
-		to_string(stats.player1_pts).c_str(), letter_spacing
-	);
+	if (stats.game != 0) {
+		rgb_matrix::DrawText(
+			offscreen_canvas, font,
+			5, 6 + font.baseline(),
+			score, nullptr,
+			to_string(stats.player0_pts).c_str(), 
+			letter_spacing
+		);
+		
+		rgb_matrix::DrawText(
+			offscreen_canvas, font,
+			5+p2_x_offset, 6 + font.baseline(),
+			score, nullptr,
+			to_string(stats.player1_pts).c_str(), letter_spacing
+		);
+	}
 
 	if (stats.player0_cbs) {
 		rgb_matrix::DrawText(
@@ -302,9 +393,11 @@ void draw_text(FrameCanvas* offscreen_canvas, rgb_matrix::Font& font) {
 void draw_stats(FrameCanvas* offscreen_canvas, rgb_matrix::Font& font) {
 	int ret = pthread_mutex_trylock(&stats_lock);
 	if (ret == 0) {
+		draw_background(offscreen_canvas, font);
 		draw_rectangle_content(offscreen_canvas);
 		draw_square_content(offscreen_canvas);
 		draw_text(offscreen_canvas, font);
+		draw_game_status(offscreen_canvas, font);
 
 		pthread_mutex_unlock(&stats_lock);
 	}
@@ -319,21 +412,19 @@ class BackgroundThread : public rgb_matrix::ThreadedCanvasManipulator {
 			}
 		}
 		virtual void Run() {
-			draw_background(offscreen_canvas, font);
-			offscreen_canvas = matrix_->SwapOnVSync(offscreen_canvas);
-			draw_background(offscreen_canvas, font);
 
 			while (running() && !interrupt_received) {
-				// offscreen_canvas->SetPixel(10, 10, 0, 0, 0);
-				draw_stats(offscreen_canvas, font);
-				// Swap the offscreen_canvas with canvas on vsync, avoids flickering
-				offscreen_canvas = matrix_->SwapOnVSync(offscreen_canvas);
-				usleep(100000);	// sleep 0.1 s
+				if (stats.game == 0) {
+					RGB(text);
+				}
 
-				// offscreen_canvas->SetPixel(10, 10, 255, 0, 0);
 				draw_stats(offscreen_canvas, font);
-				offscreen_canvas = matrix_->SwapOnVSync(offscreen_canvas);
-				usleep(100000);
+				offscreen_canvas = matrix_->SwapOnVSync(offscreen_canvas);	// Swap the offscreen_canvas with canvas on vsync, avoids flickering
+				usleep(100000);												// sleep 0.1 s
+
+				// draw_stats(offscreen_canvas, font);
+				// offscreen_canvas = matrix_->SwapOnVSync(offscreen_canvas);
+				// usleep(100000);
 			}
 		}
 	private:
