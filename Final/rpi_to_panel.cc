@@ -198,13 +198,13 @@ void draw_game_status(FrameCanvas* offscreen_canvas, rgb_matrix::Font& font) {
 
 	switch(stats.game) {
 		case 0:		// IDLE
-			// rgb_matrix::DrawText(
-			// 	offscreen_canvas, font,
-			// 	6, 23 + font.baseline(),
-			// 	text, nullptr,
-			// 	"Tetris Battle", 
-			// 	letter_spacing
-			// );
+			rgb_matrix::DrawText(
+				offscreen_canvas, font,
+				6, 23 + font.baseline(),
+				text, nullptr,
+				"Tetris Battle", 
+				letter_spacing
+			);
 			break;
 		case 1:		// p0 join
 			rgb_matrix::DrawText(
@@ -257,7 +257,7 @@ void draw_background(FrameCanvas* offscreen_canvas, rgb_matrix::Font& font) {
 	int p2_x_offset = 32;
 	int next_shift_x_offset = 12;
 
-	if (stats.game == 1) {		// IDLE
+	if (stats.game == 0) {		// IDLE
 		offscreen_canvas->Fill(0, 0, 0);
 	} else {
 		// p1
