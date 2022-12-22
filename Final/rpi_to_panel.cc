@@ -242,6 +242,15 @@ void draw_game_status(FrameCanvas* offscreen_canvas, rgb_matrix::Font& font) {
 				letter_spacing
 			);
 			break;
+		case 5:		// tie
+			rgb_matrix::DrawText(
+				offscreen_canvas, font,
+				12, 0 + font.baseline(),
+				text, nullptr,
+				"It's a Tie!", 
+				letter_spacing
+			);
+			break;
 		default:
 			rgb_matrix::DrawText(
 				offscreen_canvas, font,
