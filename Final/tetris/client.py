@@ -53,11 +53,13 @@ def signal():
         with conn:
             print('Connected by', addr)
             while True:  # draw ten result sent by the sensot
-                print("processing data", counter)
+                # print("processing data", counter)
                 counter += 1
                 data = conn.recv(1024).decode('utf-8')
+                print(data)
                 if data == "d" or data == "u":
                     q.put(data)
+                    q.get()
 
 
 # def main():
