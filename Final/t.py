@@ -564,10 +564,10 @@ def draw_status(shadow=0):
 
     for i in range(4):
         for j in range(4):
-            t.player0_shift[i][j] = status["shift0"][i][j]
-            t.player1_shift[i][j] = status["shift1"][i][j]
-            t.player0_next[i][j] = status["next0"][i][j]
-            t.player1_shift[i][j] = status["next1"][i][j]
+            t.player0_shift[j][i] = status["shift0"][i][j]
+            t.player1_shift[j][i] = status["shift1"][i][j]
+            t.player0_next[j][i] = status["next0"][i][j]
+            t.player1_next[j][i] = status["next1"][i][j]
 
     t.player0_pts = status["score0"]
     t.player1_pts = status["score1"]
@@ -677,6 +677,7 @@ constTime = 29
 
 
 def winner(win):
+    draw_status()
     draw_boundary(200, 200)
     draw_boundary(800, 200)
     sc(str(status["score0"]), str(status["combo0"]))
@@ -776,12 +777,14 @@ def main(player=0):
     global background
     background = pygame.display.set_mode((width, height))
     pygame.display.set_caption('Tetris')
+    draw_status()
 
     # start()
     global n
     n = Network()
     status["game"] = 1
     send_status()
+    draw_status()
     if status["game"] == 1:
         waiting()
     status["game"] = 2

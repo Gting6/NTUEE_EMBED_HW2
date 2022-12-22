@@ -94,12 +94,12 @@ void RGB(rgb_matrix::Color& color) {
 unordered_map<int, rgb_matrix::Color> id2color = {
 	{0, EMPTY},
 	{1, I}, 
-	{2, J}, 
-	{3, L}, 
+	{2, L}, 
+	{3, J}, 
 	{4, O},
 	{5, S},
-	{6, T},
-	{7, Z},
+	{6, Z},
+	{7, T},
 	{8, SHADOW}
 };
 
@@ -378,7 +378,7 @@ void draw_text(FrameCanvas* offscreen_canvas, rgb_matrix::Font& font) {
 		);
 	}
 
-	if (stats.player0_cbs) {
+	if (stats.player0_cbs != 0) {
 		rgb_matrix::DrawText(
 			offscreen_canvas, font,
 			17, 6 + font.baseline(),
@@ -387,7 +387,7 @@ void draw_text(FrameCanvas* offscreen_canvas, rgb_matrix::Font& font) {
 			letter_spacing
 		);
 	}
-	if (stats.player1_cbs) {
+	if (stats.player1_cbs != 0) {
 		rgb_matrix::DrawText(
 			offscreen_canvas, font,
 			17+p2_x_offset, 6 + font.baseline(),
@@ -423,10 +423,10 @@ class BackgroundThread : public rgb_matrix::ThreadedCanvasManipulator {
 		virtual void Run() {
 
 			while (running() && !interrupt_received) {
-				if (stats.game == 0) {
+				if (stats.game != 2) {
 					RGB(text);
 				}
-
+				offscreen_canvas->Fill(0, 0, 0);
 				draw_stats(offscreen_canvas, font);
 				offscreen_canvas = matrix_->SwapOnVSync(offscreen_canvas);	// Swap the offscreen_canvas with canvas on vsync, avoids flickering
 				usleep(100000);												// sleep 0.1 s
@@ -540,7 +540,13 @@ int main(int argc, char **argv) {
 			// 	exit(1);
 			// }
 			int n = read(fifo_fd, &packet, sizeof(Stats));
+			// if (n < 0) {
+			// 	int err = errno;
+			// 	cerr << "errno" << err << endl;
+			// 	break;
+			// }
 			if (n == sizeof(Stats)) {
+				// cerr << "read" << endl;
 				int ret = pthread_mutex_trylock(&stats_lock);
 				if (ret == 0) {
 					stats = packet;
