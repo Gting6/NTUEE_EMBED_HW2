@@ -10,9 +10,9 @@ We use STM32 as joysticks, RPI to run the program, and Screen or LED Board to di
 3. A report for technical detail: https://docs.google.com/document/d/1hyNeEKx3AFEjXPmNtxlAy3au71G4QL8kYioiCt8h2j4/edit?usp=sharing
 
 Some Screenshots:
-
-## Architecture
-
+<img width="582" alt="image" src="https://user-images.githubusercontent.com/46078333/209315081-62248a95-53dc-40ea-bdbf-e48494b2353b.png">
+<img width="960" alt="image" src="https://user-images.githubusercontent.com/46078333/209315214-d7f6a900-9213-46e2-9178-d7bd46498e94.png">
+<img width="342" alt="image" src="https://user-images.githubusercontent.com/46078333/209315025-5fa43155-7685-4262-8037-99ac9c633d8b.png">
 
 
 ## To Reproduce
