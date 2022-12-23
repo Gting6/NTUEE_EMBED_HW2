@@ -6,8 +6,8 @@ We use STM32 as joysticks, RPI to run the program, and Screen or LED Board to di
 
 ## Demo
 1. Please check the video below: https://youtu.be/rcX75-qD13I
-2. A slide for introduction: https://docs.google.com/presentation/d/1Aby_lr33wbf42xS_1EhIPdjvo-xVapIzBRzLc1MYF40/edit?usp=sharing
-3. A report for technical detail: https://docs.google.com/document/d/1hyNeEKx3AFEjXPmNtxlAy3au71G4QL8kYioiCt8h2j4/edit?usp=sharing
+2. A slide for introduction: `Demo Slide.pdf`
+3. A report for technical detail: `Final Report.pdf`
 
 Some Screenshots:
 <img width="582" alt="image" src="https://user-images.githubusercontent.com/46078333/209315081-62248a95-53dc-40ea-bdbf-e48494b2353b.png">
@@ -16,6 +16,7 @@ Some Screenshots:
 
 
 ## To Reproduce
+- `make; ./rpi_to_panel`
 - `python s3.py`: open tetris server
 - `python t3.py`: use LED to play
 
