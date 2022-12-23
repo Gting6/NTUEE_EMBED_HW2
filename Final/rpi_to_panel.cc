@@ -161,7 +161,6 @@ void thread_read_fifo(const char* fifo_path) {
 			cerr << "select error" << endl;
 			exit(1);
 		}
-		
 	}
 
 	close(fifo_fd);
@@ -383,7 +382,7 @@ void draw_text(FrameCanvas* offscreen_canvas, rgb_matrix::Font& font) {
 			offscreen_canvas, font,
 			17, 6 + font.baseline(),
 			combo, nullptr,
-			strcat((char*)X.c_str(), to_string(stats.player0_pts).c_str()), 
+			strcat((char*)X.c_str(), to_string(stats.player0_cbs).c_str()), 
 			letter_spacing
 		);
 	}
@@ -392,7 +391,7 @@ void draw_text(FrameCanvas* offscreen_canvas, rgb_matrix::Font& font) {
 			offscreen_canvas, font,
 			17+p2_x_offset, 6 + font.baseline(),
 			combo, nullptr,
-			strcat((char*)X.c_str(), to_string(stats.player0_pts).c_str()), 
+			strcat((char*)X.c_str(), to_string(stats.player1_cbs).c_str()), 
 			letter_spacing
 		);
 	}
