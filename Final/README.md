@@ -16,9 +16,12 @@ Some Screenshots:
 
 
 ## To Reproduce
+### rpi
 - `make; ./rpi_to_panel`
 - `python s3.py`: open tetris server
 - `python t3.py`: use LED to play
+### stm32
+- import `mbed-os-example-sockets` in mbed studio. Replace `main.cpp` with repo's `main.cpp`. Setting ssid and password in `mbed_app.json`. Clean build and run on stm32.
 
 If one want to play on PC, use `t.py` for tetris client
 * Rember to update your IP at `n / n3.py`, `s / s3.py`
