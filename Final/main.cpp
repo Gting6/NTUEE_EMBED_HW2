@@ -27,140 +27,91 @@
 
 using namespace std;
 
-#define BUFFER_SIZE 320
-#define DSP_WINDOW 160
-#define DSP_BLOCK 16
-#if defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE)
-#define NUM_TAPS_ARRAY_SIZE 32
-#else
-#define NUM_TAPS_ARRAY_SIZE 32
-#endif
-#define NUM_TAPS 16
+#define LD1_ON     {led1 = 1;}
+#define LD1_OFF    {led1 = 0;}
+#define LD1_TOG    {led1 = !led1;}
 
-static float32_t testOutput[DSP_WINDOW];
-#if defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE)
-static float32_t firStateF32[2 * DSP_BLOCK + NUM_TAPS - 1];
-#else
-static float32_t firStateF32[DSP_BLOCK + NUM_TAPS - 1];
-#endif
-#if defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE)
-const float32_t firCoeffs32[NUM_TAPS_ARRAY_SIZE] = {
-    -0.0018225230f, -0.0015879294f, +0.0000000000f, +0.0036977508f, +0.0080754303f, +0.0085302217f, -0.0000000000f, -0.0173976984f,
-    -0.0341458607f, -0.0333591565f, +0.0000000000f, +0.0676308395f, +0.1522061835f, +0.2229246956f, +0.2504960933f, +0.2229246956f,
-    +0.1522061835f, +0.0676308395f, +0.0000000000f, -0.0333591565f, -0.0341458607f, -0.0173976984f, -0.0000000000f, +0.0085302217f,
-    +0.0080754303f, +0.0036977508f, +0.0000000000f, -0.0015879294f, -0.0018225230f, 0.0f, 0.0f, 0.0f};
-#else
-const float32_t firCoeffs32[NUM_TAPS_ARRAY_SIZE] = {
-    -0.0018225230f, -0.0015879294f, +0.0000000000f, +0.0036977508f, +0.0080754303f, +0.0085302217f, -0.0000000000f, -0.0173976984f,
-    -0.0341458607f, -0.0333591565f, +0.0000000000f, +0.0676308395f, +0.1522061835f, +0.2229246956f, +0.2504960933f, +0.2229246956f,
-    +0.1522061835f, +0.0676308395f, +0.0000000000f, -0.0333591565f, -0.0341458607f, -0.0173976984f, -0.0000000000f, +0.0085302217f,
-    +0.0080754303f, +0.0036977508f, +0.0000000000f, -0.0015879294f, -0.0018225230f};
-#endif
-uint32_t blockSize = DSP_BLOCK;
-uint32_t numBlocks = DSP_WINDOW / DSP_BLOCK;
+#define LD2_ON     {led2 = 1;}
+#define LD2_OFF    {led2 = 0;}
+#define LD2_TOG    {led2 = !led2;}
 
-typedef struct
+
+DigitalOut led1(LED1);
+DigitalOut led2(LED2);
+
+InterruptIn button1(D2);
+InterruptIn button2(D4);
+
+
+void button1_pressed()
 {
-    vector<int16_t> buffer;
-    int printIndex;
-    time_t start;
-} SensorData;
-
-class FSM
-{
-public:
-    string state = "WAIT";
-    map<string, map<int, string>> fsm = {
-        {"WAIT", {{0, "WAIT"}, {1, "S1"}, {-1, "S4"}}},
-        {"S1", {{0, "S1"}, {1, "S1"}, {-1, "S2"}}},
-        {"S2", {{0, "S2"}, {1, "S3"}, {-1, "S2"}}},
-        {"S3", {{0, "WAIT"}, {1, "S3"}, {-1, "ERROR"}}},
-        {"S4", {{0, "S4"}, {1, "S5"}, {-1, "S4"}}},
-        {"S5", {{0, "S5"}, {1, "S5"}, {-1, "S6"}}},
-        {"S6", {{0, "WAIT"}, {1, "ERROR"}, {-1, "S6"}}}};
-    vector<char> actions;
-
-    string _change_state(int16_t input)
-    {
-        state = fsm[state][input];
-        if (state == "ERROR")
-        {
-            state = "WAIT";
-            return "ERROR";
-        }
-        return state;
-    }
-};
-
-void clip(int16_t &input)
-{
-    if (input > 750 && input < 1400)
-        input = 0;
-    else if (input >= 1400)
-        input = 1;
-    else
-        input = -1;
+    LD1_ON;
 }
 
-// single simple with fsm
-char get_up_down(int16_t input, FSM &fsm)
+void button1_released()
 {
-    int16_t data = input;
-    clip(data);
-
-    // using fsm
-    string state = fsm.state;
-    // if (state == "S3")
-    // {
-    //     if (fsm._change_state(data) == "WAIT")
-    //     {
-    //         return 'u';
-    //     }
-    //     // printf("%c\n", 'u');
-    // }
-    // else if (state == "S6")
-    // {
-    //     if (fsm._change_state(data) == "WAIT")
-    //     {
-    //         return 'd';
-    //         // int len = sprintf(acc_json, "%c", "d");
-    //         // response = _socket.send(acc_json, len);
-    //     }
-    //     // printf("%c\n", 'd');
-    // }
-    if (state == "S1")
-    {
-        if (fsm._change_state(data) == "S2")
-        {
-            return 'u';
-        }
-    }
-    else if (state == "S4")
-    {
-        if (fsm._change_state(data) == "S5")
-        {
-            return 'd';
-        }
-    }
-    else
-        fsm._change_state(data);
-    return ' ';
+    LD1_OFF;
 }
 
-void fir(float32_t *input)
+void button2_pressed()
 {
-    uint32_t i;
-    arm_fir_instance_f32 S;
-    arm_status status;
-    float32_t *inputF32, *outputF32;
-    inputF32 = &input[0];
-    outputF32 = &testOutput[0];
-    arm_fir_init_f32(&S, NUM_TAPS, (float32_t *)&firCoeffs32[0], &firStateF32[0], blockSize);
-    for (i = 0; i < numBlocks; i++)
-    {
-        arm_fir_f32(&S, inputF32 + (i * blockSize), outputF32 + (i * blockSize), blockSize);
-    }
+    LD2_ON;
 }
+
+void button2_released()
+{
+    LD2_OFF;
+}
+
+
+
+// void get_up_down(int16_t pDataXYZ, float pGyroDataXYZ, float &angle){
+//     if (pGyroDataXYZ > 4000){
+//         angle += pGyroDataXYZ;
+//     }
+//     else if (pGyroDataXYZ < -4000){
+//         angle += pGyroDataXYZ;
+//     }
+//     else{
+//         angle = 0;
+//     }
+//     //printf("%.2f\n", angle);
+//     if (angle > 800000 && pDataXYZ > 1250){
+//         printf("up\n\n\n");
+//         sending('u');
+//         ThisThread::sleep_for(300);
+//         angle = 0;
+//     }
+//     else if (angle < -800000 && pDataXYZ < 850){
+//         printf("down\n\n\n");
+//         sending('d');
+//         ThisThread::sleep_for(300);
+//         angle = 0;
+//     }
+// }
+
+// void side_rotate(float pGyroDataXYZ, float &angle){
+//     if (pGyroDataXYZ > 4000){
+//         angle += pGyroDataXYZ;
+//     }
+//     else if (pGyroDataXYZ < -4000){
+//         angle = 0;
+//     }
+//     else{
+//         angle = 0;
+//     }
+//     //printf("%.2f\n", angle);
+//     if (angle > 3000000){
+//         printf("rotate\n\n\n");
+//         sending('o');
+//         ThisThread::sleep_for(200);
+        
+//         angle = 0;
+//     }
+// }
+
+char direction[3] = {'l', 'n', 'r'};
+
 
 class SocketDemo
 {
@@ -185,6 +136,63 @@ public:
             _net->disconnect();
         }
     }
+
+    void sending(char tmp)
+    {
+        // int response = 0;
+        // char acc_json[MAX_MESSAGE_RECEIVED_LENGTH];
+        // printf("send! %c\n", tmp);
+        // int len = sprintf(acc_json, "%c", tmp);
+        // response = _socket.send(acc_json, len);
+        // ThisThread::sleep_for(10ms);
+    }
+
+
+    void get_up_down(int16_t pDataXYZ, float pGyroDataXYZ, float &angle){
+        if (pGyroDataXYZ > 4000){
+            angle += pGyroDataXYZ;
+        }
+        else if (pGyroDataXYZ < -4000){
+            angle += pGyroDataXYZ;
+        }
+        else{
+            angle = 0;
+        }
+        //printf("%.2f\n", angle);
+        if (angle > 800000 && pDataXYZ > 1250){
+            printf("up\n\n\n");
+            sending('u');
+            ThisThread::sleep_for(300);
+            angle = 0;
+        }
+        else if (angle < -800000 && pDataXYZ < 850){
+            printf("down\n\n\n");
+            sending('d');
+            ThisThread::sleep_for(300);
+            angle = 0;
+        }
+    }
+
+    void side_rotate(float pGyroDataXYZ, float &angle){
+        if (pGyroDataXYZ > 4000){
+            angle += pGyroDataXYZ;
+        }
+        else if (pGyroDataXYZ < -4000){
+            angle = 0;
+        }
+        else{
+            angle = 0;
+        }
+        //printf("%.2f\n", angle);
+        if (angle > 3000000){
+            printf("rotate\n\n\n");
+            sending('o');
+            ThisThread::sleep_for(200);
+            
+            angle = 0;
+        }
+    }
+
 
     void run()
     {
@@ -247,23 +255,40 @@ public:
         }
 
         /* exchange an HTTP request and response */
-        int16_t pDataXYZ[3] = {0};
-        FSM fsm;
-        vector<int16_t> input;
-        int response;
-        char acc_json[MAX_MESSAGE_RECEIVED_LENGTH];
+        int response = 0;
+
+        button1.fall(button1_released);
+        button1.rise(button1_pressed); // Change led
+
+        button2.fall(&button2_released);
+        button2.rise(&button2_pressed); // Chtange led
 
         BSP_ACCELERO_Init();
+        BSP_GYRO_Init();
+        int16_t pDataXYZ[3] = {0};
+        float pGyroDataXYZ[3] = {0};
+        float side_angle = 0;
+        float up_down_angle = 0;
+
         while (1)
         {
             BSP_ACCELERO_AccGetXYZ(pDataXYZ);
-            char tmp = get_up_down(pDataXYZ[2], fsm);
-            if (tmp != ' ')
-            {
-                int len = sprintf(acc_json, "%c", tmp);
-                response = _socket.send(acc_json, len);
-            }
-            ThisThread::sleep_for(10ms);
+            BSP_GYRO_GetXYZ(pGyroDataXYZ);
+
+            get_up_down(pDataXYZ[2], pGyroDataXYZ[0], up_down_angle);
+            side_rotate(pGyroDataXYZ[1], side_angle);
+
+            if (led1.read()) {
+               printf("%c\n", direction[0]);
+                sending('l');
+                ThisThread::sleep_for(200);
+                
+            } else if (led2.read()) {
+                printf("%c\n", direction[2]);
+                sending('r');
+                ThisThread::sleep_for(200);
+
+            } 
         }
 
         // int sample_num = 0;
@@ -294,21 +319,20 @@ public:
         //                       (float)((int)(pDataXYZ[2] * 10000)) / 10000,
         //                       sample_num);
         //     response = _socket.send(acc_json, len);
-        if (0 > response)
-        {
-            printf("Error seding: %d\n", response);
-        }
-        else
-        {
-            printf("sent %d bytes\r\n", response);
-        }
+        // if (0 > response)
+        // {
+        //     printf("Error sending: %d\n", response);
+        // }
+        // else
+        // {
+        //     printf("sent %d bytes\r\n", response);
+        // }
         // len -= response;
         ThisThread::sleep_for(1s);
     }
 
     // printf("Demo concluded successfully \r\n");
     // _socket.close();
-
 private:
     bool
     resolve_hostname(SocketAddress &address)

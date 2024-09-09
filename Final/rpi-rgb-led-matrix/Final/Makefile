@@ -67,7 +67,7 @@ rpi_to_panel: rpi_to_panel.o
 	$(CC) -I$(RGB_INCDIR) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f $(OBJECTS) $(BINARIES)
+	rm -f $(OBJECTS) $(BINARIES) *.fifo
 
 FORCE:
 .PHONY: FORCE
